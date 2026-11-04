@@ -332,7 +332,7 @@ app.post('/api/claim', (req, res) => {
 });
 
 app.post('/api/admin/data', (req, res) => {
-  res.send({ deposits: db.deposits.filter(d => d.Status === 'Pending'), users: db.users });
+  res.send({ deposits: db.deposits.filter(d => d.status === 'Pending'), users: db.users });
 });
 
 app.post('/api/admin/deposit', (req, res) => {
@@ -356,7 +356,6 @@ app.post('/api/admin/bal', (req, res) => {
   res.send({ ok: true });
 });
 
-const PORT = process.env.PORT || 3000;
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`VIP Portal Running on Port ${PORT}`);
