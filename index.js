@@ -1,517 +1,359 @@
-const http = require('http');
+const express = require('express');
+const app = express();
+app.use(express.json());
 
-// In-Memory Database (6 Plans + Default Admin 03256098796)
+// In-Memory Database
 const db = {
+  users: [],
   plans: [
-    { id: 1, name: 'VIP 1 - Starter', price: 500, daily: 50 },
-    { id: 2, name: 'VIP 2 - Bronze', price: 1500, daily: 150 },
-    { id: 3, name: 'VIP 3 - Silver', price: 5000, daily: 500 },
-    { id: 4, name: 'VIP 4 - Gold', price: 10000, daily: 1000 },
-    { id: 5, name: 'VIP 5 - Platinum', price: 25000, daily: 2500 },
-    { id: 6, name: 'VIP 6 - Diamond', price: 50000, daily: 5000 },
-  ],
-  users: [
-    {
-      id: 1,
-      name: 'Admin',
-      phone: '03256098796',
-      pass: 'admin123',
-      balance: 0,
-      withdrawn: 0,
-      planId: 0,
-      lastClaim: 0,
-      isAdmin: true,
-    },
+    { id: 1, name: 'VIP 1 - Starter', price: 500, daily: 50, days: 30 },
+    { id: 2, name: 'VIP 2 - Bronze', price: 1500, daily: 150, days: 30 },
+    { id: 3, name: 'VIP 3 - Silver', price: 3000, daily: 300, days: 30 },
+    { id: 4, name: 'VIP 4 - Gold', price: 6000, daily: 600, days: 30 },
+    { id: 5, name: 'VIP 5 - Platinum', price: 15000, daily: 1500, days: 30 },
+    { id: 6, name: 'VIP 6 - Diamond', price: 50000, daily: 5000, days: 30 }
   ],
   deposits: [],
-  withdrawals: [],
+  withdrawals: []
 };
 
-const htmlPage = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIP Daily Earning Portal</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-950 text-white min-h-screen font-sans pb-20">
+const ADMIN_PHONE = '03256098796';
+const ADMIN_PASS = 'admin123';
 
-  <!-- Top Bar -->
-  <nav class="bg-gray-900 border-b border-yellow-500/30 px-4 py-3 flex justify-between items-center sticky top-0 z-40">
-    <h1 class="text-xl font-extrabold text-yellow-400">💎 VIP Earn PK</h1>
-    <div id="nav-btns" class="hidden flex items-center gap-2">
-      <span id="nav-phone" class="text-xs text-gray-300"></span>
-      <button onclick="logout()" class="bg-red-600 text-xs px-3 py-1.5 rounded font-bold">Logout</button>
-    </div>
-  </nav>
+app.get('/', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>VIP Earn PK - Official Portal</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </head>
+    <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between">
+      <div id="app" class="max-w-md mx-auto w-full p-4 flex-grow"></div>
+      
+      <!-- WhatsApp Support Floating Button -->
+      <a href="https://wa.me/923256098796" target="_blank" class="fixed bottom-5 right-5 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-sm font-bold z-50 transition transform hover:scale-105">
+        <i class="fab fa-whatsapp text-xl"></i> WhatsApp Support
+      </a>
 
-  <!-- AUTH BOX -->
-  <div id="auth-box" class="max-w-md mx-auto mt-10 p-6 bg-gray-900 rounded-2xl border border-yellow-500/30 shadow-xl">
-    <h2 id="auth-title" class="text-2xl font-bold text-center text-yellow-400 mb-2">Login Account</h2>
-    <p class="text-xs text-center text-gray-400 mb-5">Admin Login: <b>03256098796</b> | Pass: <b>admin123</b></p>
-    <div class="space-y-3">
-      <input id="u-name" type="text" placeholder="Full Name" class="hidden w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-white">
-      <input id="u-phone" type="text" placeholder="Mobile Number (e.g. 03001234567)" class="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-white">
-      <input id="u-pass" type="password" placeholder="Password" class="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-white">
-      <button onclick="handleAuth()" id="auth-btn" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 rounded-lg">Login</button>
-      <p class="text-center text-sm text-gray-400 pt-2">
-        <span id="toggle-txt">New user?</span>
-        <button onclick="toggleMode()" id="toggle-link" class="text-yellow-400 font-bold underline ml-1">Create Account</button>
-      </p>
-    </div>
-  </div>
+      <script>
+        let currentUser = null;
 
-  <!-- USER DASHBOARD -->
-  <div id="user-sec" class="hidden max-w-4xl mx-auto p-4 space-y-6">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <div class="bg-gray-900 p-4 rounded-xl border border-yellow-500/40">
-        <p class="text-xs text-gray-400">Wallet Balance</p>
-        <p class="text-2xl font-extrabold text-yellow-400">Rs. <span id="u-bal">0</span></p>
-      </div>
-      <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
-        <p class="text-xs text-gray-400">Active Plan</p>
-        <p id="u-plan" class="text-lg font-bold text-white">None</p>
-      </div>
-      <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
-        <p class="text-xs text-gray-400">Daily Profit</p>
-        <p class="text-xl font-bold text-green-400">Rs. <span id="u-daily">0</span></p>
-      </div>
-      <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
-        <p class="text-xs text-gray-400">Total Withdrawn</p>
-        <p class="text-xl font-bold text-blue-400">Rs. <span id="u-with">0</span></p>
-      </div>
-    </div>
+        async function api(url, data) {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          return res.json();
+        }
 
-    <!-- Claim & Withdraw Bar -->
-    <div class="bg-gray-900 p-5 rounded-2xl border border-yellow-500/30 flex flex-col md:flex-row justify-between items-center gap-4">
-      <div>
-        <h3 class="text-lg font-bold text-yellow-400">🎁 Daily Profit Center</h3>
-        <p class="text-xs text-gray-400">Click every 24 hours to add your daily profit to wallet.</p>
-      </div>
-      <div class="flex gap-3 w-full md:w-auto">
-        <button onclick="claimProfit()" class="flex-1 bg-green-500 hover:bg-green-400 text-black font-bold px-5 py-3 rounded-xl">⚡ Claim Daily Profit</button>
-        <button onclick="document.getElementById('w-modal').classList.remove('hidden')" class="flex-1 bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-5 py-3 rounded-xl">🏦 Withdraw</button>
-      </div>
-    </div>
+        function renderLogin() {
+          document.getElementById('app').innerHTML = \`
+            <div class="flex items-center justify-center mt-12">
+              <div class="bg-slate-900 border border-amber-500/30 p-8 rounded-2xl shadow-2xl w-full relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
+                <div class="text-center mb-8">
+                  <div class="inline-block p-3 bg-amber-500/10 text-amber-400 rounded-full text-3xl mb-3 shadow-inner">
+                    <i class="fas fa-gem"></i>
+                  </div>
+                  <h1 class="text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">VIP Earn PK</h1>
+                  <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest">Secure Investment Portal</p>
+                </div>
+                
+                <form onsubmit="handleLogin(event)" class="space-y-5">
+                  <div>
+                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Mobile Number</label>
+                    <div class="relative">
+                      <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fas fa-phone"></i></span>
+                      <input type="text" id="phone" required placeholder="03001234567" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 pl-10 text-white focus:outline-none focus:border-amber-500 transition">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Password</label>
+                    <div class="relative">
+                      <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fas fa-lock"></i></span>
+                      <input type="password" id="pass" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 pl-10 text-white focus:outline-none focus:border-amber-500 transition">
+                    </div>
+                  </div>
+                  <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-extrabold py-3.5 rounded-xl shadow-lg hover:from-amber-400 hover:to-yellow-300 transition transform active:scale-95">
+                    Secure Login
+                  </button>
+                </form>
+                <div class="text-center mt-6">
+                  <button onclick="renderRegister()" class="text-amber-400 text-sm hover:underline font-medium">New member? Create Account</button>
+                </div>
+              </div>
+            </div>
+          \`;
+        }
 
-    <!-- 6 Plans Grid -->
-    <div>
-      <h3 class="text-xl font-bold text-yellow-400 mb-3">🔥 Investment Plans (10% Daily Return)</h3>
-      <div id="plans-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
-    </div>
+        function renderRegister() {
+          document.getElementById('app').innerHTML = \`
+            <div class="flex items-center justify-center mt-12">
+              <div class="bg-slate-900 border border-amber-500/30 p-8 rounded-2xl shadow-2xl w-full">
+                <div class="text-center mb-8">
+                  <h1 class="text-2xl font-bold text-amber-400">Create Account</h1>
+                  <p class="text-xs text-slate-400 mt-1">Join VIP Earn PK Today</p>
+                </div>
+                <form onsubmit="handleRegister(event)" class="space-y-4">
+                  <div>
+                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Full Name</label>
+                    <input type="text" id="name" required placeholder="Ali Khan" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500">
+                  </div>
+                  <div>
+                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Mobile Number</label>
+                    <input type="text" id="phone" required placeholder="03001234567" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500">
+                  </div>
+                  <div>
+                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Password</label>
+                    <input type="password" id="pass" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500">
+                  </div>
+                  <button type="submit" class="w-full bg-amber-500 text-slate-950 font-bold py-3.5 rounded-xl hover:bg-amber-400 transition">Register Now</button>
+                </form>
+                <div class="text-center mt-4">
+                  <button onclick="renderLogin()" class="text-slate-400 text-sm hover:text-amber-400">Already have an account? Login</button>
+                </div>
+              </div>
+            </div>
+          \`;
+        }
 
-    <!-- User History -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
-        <h4 class="font-bold text-yellow-400 mb-2">My Deposits</h4>
-        <div id="u-deps" class="space-y-2 text-xs"></div>
-      </div>
-      <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
-        <h4 class="font-bold text-yellow-400 mb-2">My Withdrawals</h4>
-        <div id="u-withs" class="space-y-2 text-xs"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ADMIN PANEL SECTION -->
-  <div id="admin-sec" class="hidden max-w-5xl mx-auto p-4 space-y-6">
-    <div class="bg-yellow-500/10 border border-yellow-500 p-4 rounded-xl flex justify-between items-center">
-      <h2 class="text-xl font-bold text-yellow-400">⚙️ Admin Control Panel (03256098796)</h2>
-      <button onclick="loadState()" class="bg-yellow-500 text-black text-xs font-bold px-3 py-1.5 rounded">🔄 Refresh Data</button>
-    </div>
-
-    <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
-      <h3 class="font-bold text-yellow-400 mb-3">📥 Deposit Requests (Approve TID to Activate Plan)</h3>
-      <div id="a-deps" class="space-y-2 text-sm"></div>
-    </div>
-
-    <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
-      <h3 class="font-bold text-green-400 mb-3">💸 Withdrawal Requests</h3>
-      <div id="a-withs" class="space-y-2 text-sm"></div>
-    </div>
-
-    <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
-      <h3 class="font-bold text-blue-400 mb-3">👥 All Users (Add / Edit Balance Manually)</h3>
-      <div id="a-users" class="space-y-2 text-sm"></div>
-    </div>
-  </div>
-
-  <!-- DEPOSIT MODAL -->
-  <div id="d-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-900 border border-yellow-500 rounded-2xl max-w-md w-full p-6 space-y-4">
-      <h3 class="text-xl font-bold text-yellow-400" id="d-title">Activate Plan</h3>
-      <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 space-y-1">
-        <p class="text-xs text-gray-400">Send Amount to EasyPaisa / JazzCash:</p>
-        <div class="flex justify-between items-center">
-          <span class="text-xl font-extrabold text-green-400">03256098796</span>
-          <button onclick="navigator.clipboard.writeText('03256098796');alert('Number Copied!')" class="bg-gray-700 text-xs px-2 py-1 rounded">Copy</button>
-        </div>
-        <p class="text-sm text-yellow-400 font-bold">Amount: Rs. <span id="d-price">0</span></p>
-      </div>
-      <select id="d-method" class="w-full p-3 rounded-lg bg-gray-800 border border-gray-700">
-        <option>EasyPaisa</option>
-        <option>JazzCash</option>
-      </select>
-      <input id="d-tid" type="text" placeholder="Enter Transaction ID (TID)" class="w-full p-3 rounded-lg bg-gray-800 border border-gray-700">
-      <div class="flex gap-2">
-        <button onclick="sendDeposit()" class="flex-1 bg-yellow-500 text-black font-bold py-2.5 rounded-lg">Submit TID</button>
-        <button onclick="document.getElementById('d-modal').classList.add('hidden')" class="bg-gray-700 px-4 py-2.5 rounded-lg">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- WITHDRAW MODAL -->
-  <div id="w-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-900 border border-yellow-500 rounded-2xl max-w-md w-full p-6 space-y-3">
-      <h3 class="text-xl font-bold text-yellow-400">Withdraw Money</h3>
-      <input id="w-amt" type="number" placeholder="Amount (PKR)" class="w-full p-3 rounded-lg bg-gray-800 border border-gray-700">
-      <select id="w-method" class="w-full p-3 rounded-lg bg-gray-800 border border-gray-700">
-        <option>EasyPaisa</option>
-        <option>JazzCash</option>
-      </select>
-      <input id="w-num" type="text" placeholder="Account Number" class="w-full p-3 rounded-lg bg-gray-800 border border-gray-700">
-      <input id="w-title" type="text" placeholder="Account Holder Name" class="w-full p-3 rounded-lg bg-gray-800 border border-gray-700">
-      <div class="flex gap-2 pt-2">
-        <button onclick="sendWithdraw()" class="flex-1 bg-green-500 text-black font-bold py-2.5 rounded-lg">Submit Request</button>
-        <button onclick="document.getElementById('w-modal').classList.add('hidden')" class="bg-gray-700 px-4 py-2.5 rounded-lg">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <a href="https://wa.me/923256098796" target="_blank" class="fixed bottom-4 right-4 bg-green-500 text-white font-bold px-4 py-2.5 rounded-full shadow-lg text-sm">💬 WhatsApp Support</a>
-
-  <script>
-    let isLogin = true;
-    let currentUser = JSON.parse(localStorage.getItem('vip_user') || 'null');
-    let selectedPlan = null;
-
-    if (currentUser) loadState();
-
-    function toggleMode() {
-      isLogin = !isLogin;
-      document.getElementById('u-name').classList.toggle('hidden', isLogin);
-      document.getElementById('auth-title').innerText = isLogin ? 'Login Account' : 'Create Account';
-      document.getElementById('auth-btn').innerText = isLogin ? 'Login' : 'Sign Up';
-      document.getElementById('toggle-txt').innerText = isLogin ? 'New user?' : 'Already have account?';
-      document.getElementById('toggle-link').innerText = isLogin ? 'Create Account' : 'Login';
-    }
-
-    async function api(path, body) {
-      const res = await fetch(path, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      return res.json();
-    }
-
-    async function handleAuth() {
-      const name = document.getElementById('u-name').value;
-      const phone = document.getElementById('u-phone').value.trim();
-      const pass = document.getElementById('u-pass').value;
-      const res = await api('/api/auth', { isLogin, name, phone, pass });
-      if (res.error) return alert(res.error);
-      currentUser = res.user;
-      localStorage.setItem('vip_user', JSON.stringify(currentUser));
-      loadState();
-    }
-
-    async function loadState() {
-      const res = await api('/api/state', { userId: currentUser.id });
-      if (res.error) return logout();
-      currentUser = res.user;
-      document.getElementById('auth-box').classList.add('hidden');
-      document.getElementById('nav-btns').classList.remove('hidden');
-      document.getElementById('nav-phone').innerText = currentUser.phone;
-
-      if (currentUser.isAdmin) {
-        document.getElementById('admin-sec').classList.remove('hidden');
-        renderAdmin(res);
-      } else {
-        document.getElementById('user-sec').classList.remove('hidden');
-        renderUser(res);
-      }
-    }
-
-    function renderUser(data) {
-      const u = data.user;
-      const activePlan = data.plans.find(p => p.id === u.planId);
-      document.getElementById('u-bal').innerText = u.balance;
-      document.getElementById('u-plan').innerText = activePlan ? activePlan.name : 'No Active Plan';
-      document.getElementById('u-daily').innerText = activePlan ? activePlan.daily : 0;
-      document.getElementById('u-with').innerText = u.withdrawn;
-
-      document.getElementById('plans-grid').innerHTML = data.plans.map(p => \`
-        <div class="bg-gray-900 border \${u.planId === p.id ? 'border-green-500' : 'border-yellow-500/30'} p-5 rounded-2xl flex flex-col justify-between">
-          <div>
-            <span class="bg-yellow-500/20 text-yellow-400 text-xs font-bold px-2.5 py-1 rounded-full">\${p.name}</span>
-            <h4 class="text-2xl font-extrabold mt-3">Rs. \${p.price}</h4>
-            <p class="text-green-400 font-bold mt-1">Daily Profit: Rs. \${p.daily}</p>
-            <p class="text-xs text-gray-400 mt-1">Monthly Total: Rs. \${p.daily * 30}</p>
-          </div>
-          <button onclick="openDep(\${p.id}, '\${p.name}', \${p.price})" class="mt-4 w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2.5 rounded-xl">
-            \${u.planId === p.id ? '✅ Active Plan' : 'Invest Now'}
-          </button>
-        </div>
-      \`).join('');
-
-      document.getElementById('u-deps').innerHTML = data.deposits.map(d => \`
-        <div class="flex justify-between bg-gray-800 p-2 rounded">
-          <span>\${d.planName} (Rs.\${d.amount}) - TID: \${d.tid}</span>
-          <b class="\${d.status==='Approved'?'text-green-400':d.status==='Rejected'?'text-red-400':'text-yellow-400'}">\${d.status}</b>
-        </div>
-      \`).join('') || '<p class="text-gray-500">No deposits yet.</p>';
-
-      document.getElementById('u-withs').innerHTML = data.withdrawals.map(w => \`
-        <div class="flex justify-between bg-gray-800 p-2 rounded">
-          <span>Rs. \${w.amount} (\${w.method} - \${w.number})</span>
-          <b class="\${w.status==='Paid'?'text-green-400':w.status==='Rejected'?'text-red-400':'text-yellow-400'}">\${w.status}</b>
-        </div>
-      \`).join('') || '<p class="text-gray-500">No withdrawals yet.</p>';
-    }
-
-    function renderAdmin(data) {
-      document.getElementById('a-deps').innerHTML = data.allDeposits.map(d => \`
-        <div class="bg-gray-800 p-3 rounded flex justify-between items-center">
-          <div><b>\${d.userPhone}</b> | \${d.planName} (Rs.\${d.amount}) | \${d.method} | <span class="text-yellow-400">TID: \${d.tid}</span></div>
-          <div class="flex gap-2 items-center">
-            <span class="text-xs px-2 py-1 bg-gray-700 rounded">\${d.status}</span>
-            \${d.status === 'Pending' ? \`
-              <button onclick="adminDep(\${d.id}, 'Approved')" class="bg-green-600 px-3 py-1 rounded text-xs font-bold">Approve</button>
-              <button onclick="adminDep(\${d.id}, 'Rejected')" class="bg-red-600 px-3 py-1 rounded text-xs font-bold">Reject</button>
-            \` : ''}
-          </div>
-        </div>
-      \`).join('') || '<p class="text-gray-500">No deposit requests.</p>';
-
-      document.getElementById('a-withs').innerHTML = data.allWithdrawals.map(w => \`
-        <div class="bg-gray-800 p-3 rounded flex justify-between items-center">
-          <div><b class="text-green-400">Rs.\${w.amount}</b> | \${w.userPhone} -> <b>\${w.method}: \${w.number} (\${w.title})</b></div>
-          <div class="flex gap-2 items-center">
-            <span class="text-xs px-2 py-1 bg-gray-700 rounded">\${w.status}</span>
-            \${w.status === 'Pending' ? \`
-              <button onclick="adminWith(\${w.id}, 'Paid')" class="bg-green-600 px-3 py-1 rounded text-xs font-bold">Mark Paid</button>
-              <button onclick="adminWith(\${w.id}, 'Rejected')" class="bg-red-600 px-3 py-1 rounded text-xs font-bold">Reject</button>
-            \` : ''}
-          </div>
-        </div>
-      \`).join('') || '<p class="text-gray-500">No withdrawal requests.</p>';
-
-      document.getElementById('a-users').innerHTML = data.allUsers.map(u => \`
-        <div class="bg-gray-800 p-3 rounded flex justify-between items-center">
-          <div><b>\${u.name}</b> (\${u.phone}) | Plan ID: \${u.planId} | Wallet: <b class="text-yellow-400">Rs. \${u.balance}</b></div>
-          <div class="flex gap-2">
-            <input id="bal-\${u.id}" type="number" value="\${u.balance}" class="w-24 px-2 py-1 rounded bg-gray-900 border border-gray-700">
-            <button onclick="saveBal(\${u.id})" class="bg-blue-600 px-3 py-1 rounded text-xs font-bold">Update</button>
-          </div>
-        </div>
-      \`).join('') || '<p class="text-gray-500">No regular users yet.</p>';
-    }
-
-    function openDep(id, name, price) {
-      selectedPlan = id;
-      document.getElementById('d-title').innerText = 'Buy ' + name;
-      document.getElementById('d-price').innerText = price;
-      document.getElementById('d-modal').classList.remove('hidden');
-    }
-
-    async function sendDeposit() {
-      const method = document.getElementById('d-method').value;
-      const tid = document.getElementById('d-tid').value.trim();
-      if (!tid) return alert('Please enter TID!');
-      const res = await api('/api/deposit', { userId: currentUser.id, planId: selectedPlan, method, tid });
-      alert(res.message);
-      document.getElementById('d-modal').classList.add('hidden');
-      loadState();
-    }
-
-    async function claimProfit() {
-      const res = await api('/api/claim', { userId: currentUser.id });
-      alert(res.message || res.error);
-      loadState();
-    }
-
-    async function sendWithdraw() {
-      const amount = Number(document.getElementById('w-amt').value);
-      const method = document.getElementById('w-method').value;
-      const number = document.getElementById('w-num').value;
-      const title = document.getElementById('w-title').value;
-      const res = await api('/api/withdraw', { userId: currentUser.id, amount, method, number, title });
-      if (res.error) return alert(res.error);
-      alert(res.message);
-      document.getElementById('w-modal').classList.add('hidden');
-      loadState();
-    }
-
-    async function adminDep(id, status) {
-      await api('/api/admin/dep', { id, status });
-      loadState();
-    }
-
-    async function adminWith(id, status) {
-      await api('/api/admin/with', { id, status });
-      loadState();
-    }
-
-    async function saveBal(userId) {
-      const balance = Number(document.getElementById('bal-' + userId).value);
-      await api('/api/admin/bal', { userId, balance });
-      alert('Balance Updated!');
-      loadState();
-    }
-
-    function logout() {
-      localStorage.removeItem('vip_user');
-      location.reload();
-    }
-  </script>
-</body>
-</html>`;
-
-const server = http.createServer((req, res) => {
-  if (req.method === 'GET') {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    return res.end(htmlPage);
-  }
-
-  let body = '';
-  req.on('data', (chunk) => (body += chunk));
-  req.on('end', () => {
-    const data = JSON.parse(body || '{}');
-    const send = (obj) => {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(obj));
-    };
-
-    if (req.url === '/api/auth') {
-      if (data.isLogin) {
-        const u = db.users.find(
-          (x) => x.phone === data.phone && x.pass === data.pass
-        );
-        if (!u) return send({ error: 'Invalid phone or password!' });
-        return send({ user: u });
-      } else {
-        if (!data.phone || !data.pass)
-          return send({ error: 'Fill all fields!' });
-        if (db.users.find((x) => x.phone === data.phone))
-          return send({ error: 'Phone already registered!' });
-        const u = {
-          id: db.users.length + 1,
-          name: data.name || 'User',
-          phone: data.phone,
-          pass: data.pass,
-          balance: 0,
-          withdrawn: 0,
-          planId: 0,
-          lastClaim: 0,
-          isAdmin: false,
-        };
-        db.users.push(u);
-        return send({ user: u });
-      }
-    }
-
-    if (req.url === '/api/state') {
-      const u = db.users.find((x) => x.id === data.userId);
-      if (!u) return send({ error: 'Not found' });
-      return send({
-        user: u,
-        plans: db.plans,
-        deposits: db.deposits.filter((d) => d.userId === u.id).reverse(),
-        withdrawals: db.withdrawals.filter((w) => w.userId === u.id).reverse(),
-        allDeposits: u.isAdmin ? db.deposits.slice().reverse() : [],
-        allWithdrawals: u.isAdmin ? db.withdrawals.slice().reverse() : [],
-        allUsers: u.isAdmin ? db.users.filter((x) => !x.isAdmin) : [],
-      });
-    }
-
-    if (req.url === '/api/deposit') {
-      const u = db.users.find((x) => x.id === data.userId);
-      const p = db.plans.find((x) => x.id === data.planId);
-      db.deposits.push({
-        id: db.deposits.length + 1,
-        userId: u.id,
-        userPhone: u.phone,
-        planId: p.id,
-        planName: p.name,
-        amount: p.price,
-        method: data.method,
-        tid: data.tid,
-        status: 'Pending',
-      });
-      return send({
-        message: 'Deposit TID submitted! Waiting for Admin approval.',
-      });
-    }
-
-    if (req.url === '/api/claim') {
-      const u = db.users.find((x) => x.id === data.userId);
-      const p = db.plans.find((x) => x.id === u.planId);
-      if (!p) return send({ error: 'Please buy and activate a plan first!' });
-      const now = Date.now();
-      if (now - u.lastClaim < 24 * 60 * 60 * 1000) {
-        return send({
-          error: 'Already claimed today! Come back after 24 hours.',
-        });
-      }
-      u.balance += p.daily;
-      u.lastClaim = now;
-      return send({
-        message: 'Success! Rs. ' + p.daily + ' added to your wallet!',
-      });
-    }
-
-    if (req.url === '/api/withdraw') {
-      const u = db.users.find((x) => x.id === data.userId);
-      if (!data.amount || data.amount <= 0 || u.balance < data.amount)
-        return send({ error: 'Insufficient wallet balance!' });
-      u.balance -= data.amount;
-      db.withdrawals.push({
-        id: db.withdrawals.length + 1,
-        userId: u.id,
-        userPhone: u.phone,
-        amount: data.amount,
-        method: data.method,
-        number: data.number,
-        title: data.title,
-        status: 'Pending',
-      });
-      return send({ message: 'Withdrawal request sent to Admin!' });
-    }
-
-    if (req.url === '/api/admin/dep') {
-      const d = db.deposits.find((x) => x.id === data.id);
-      if (d && d.status === 'Pending') {
-        d.status = data.status;
-        if (data.status === 'Approved') {
-          const u = db.users.find((x) => x.id === d.userId);
-          if (u) {
-            u.planId = d.planId;
-            u.lastClaim = 0;
+        async function handleLogin(e) {
+          e.preventDefault();
+          const res = await api('/api/login', { phone: document.getElementById('phone').value, pass: document.getElementById('pass').value });
+          if(res.ok) {
+            currentUser = res.user;
+            if(currentUser.isAdmin) renderAdmin();
+            else renderDashboard();
+          } else {
+            alert(res.msg);
           }
         }
-      }
-      return send({ ok: true });
-    }
 
-    if (req.url === '/api/admin/with') {
-      const w = db.withdrawals.find((x) => x.id === data.id);
-      if (w && w.status === 'Pending') {
-        w.status = data.status;
-        const u = db.users.find((x) => x.id === w.userId);
-        if (u && data.status === 'Paid') u.withdrawn += w.amount;
-        if (u && data.status === 'Rejected') u.balance += w.amount;
-      }
-      return send({ ok: true });
-    }
+        async function handleRegister(e) {
+          e.preventDefault();
+          const res = await api('/api/register', { name: document.getElementById('name').value, phone: document.getElementById('phone').value, pass: document.getElementById('pass').value });
+          if(res.ok) {
+            alert('Account created successfully! Please login.');
+            renderLogin();
+          } else {
+            alert(res.msg);
+          }
+        }
 
-    if (req.url === '/api/admin/bal') {
-      const u = db.users.find((x) => x.id === data.userId);
-      if (u) u.balance = data.balance;
-      return send({ ok: true });
-    }
-  });
+        async function renderDashboard() {
+          const res = await api('/api/user', { id: currentUser.id });
+          currentUser = res.user;
+          const plans = res.plans;
+
+          document.getElementById('app').innerHTML = \`
+            <div class="py-4 space-y-6">
+              <div class="flex justify-between items-center bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-lg">
+                <div>
+                  <h2 class="text-lg font-bold text-amber-400">Welcome, \${currentUser.name}</h2>
+                  <p class="text-xs text-slate-400">\${currentUser.phone}</p>
+                </div>
+                <button onclick="logout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-red-500 hover:text-white transition">Logout</button>
+              </div>
+
+              <div class="bg-gradient-to-br from-amber-600 to-yellow-500 p-6 rounded-2xl shadow-2xl text-slate-950">
+                <p class="text-xs uppercase font-extrabold tracking-wider opacity-80">Total Wallet Balance</p>
+                <h1 class="text-3xl font-black mt-1">Rs. \${currentUser.balance.toLocaleString()}</h1>
+                <div class="mt-4 flex gap-3">
+                  <button onclick="claimDaily()" class="flex-1 bg-slate-950 text-amber-400 font-bold py-2.5 px-4 rounded-xl text-sm shadow hover:bg-slate-900 transition flex items-center justify-center gap-2">
+                    <i class="fas fa-bolt"></i> Claim Daily Profit
+                  </button>
+                </div>
+              </div>
+
+              \${currentUser.activePlan ? \`
+                <div class="bg-slate-900 border border-emerald-500/30 p-5 rounded-2xl">
+                  <div class="flex justify-between items-center">
+                    <div>
+                      <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">Active VIP Plan</span>
+                      <h3 class="font-bold text-lg text-white mt-1">\${currentUser.activePlan.name}</h3>
+                      <p class="text-xs text-slate-400 mt-0.5">Daily Profit: Rs. \${currentUser.activePlan.daily}</p>
+                    </div>
+                  </div>
+                </div>
+              \` : ''}
+
+              <div>
+                <h3 class="text-md font-bold mb-3 text-slate-200">Investment Tiers</h3>
+                <div class="grid grid-cols-1 gap-3">
+                  \${plans.map(p => \`
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex justify-between items-center">
+                      <div>
+                        <h4 class="font-bold text-amber-400">\${p.name}</h4>
+                        <p class="text-xs text-slate-400">Price: Rs. \${p.price} | Daily: <span class="text-emerald-400 font-bold">Rs. \${p.daily}</span></p>
+                      </div>
+                      <button onclick="buyPlan(\${p.id})" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition">Invest Now</button>
+                    </div>
+                  \`).join('')}
+                </div>
+              </div>
+            </div>
+          \`;
+        }
+
+        async function buyPlan(planId) {
+          const tid = prompt('Please send money to EasyPaisa/JazzCash (Admin: 03256098796) and enter your Transaction ID (TID):');
+          if(!tid) return;
+          const res = await api('/api/deposit', { userId: currentUser.id, planId, tid, method: 'EasyPaisa' });
+          alert(res.msg);
+          renderDashboard();
+        }
+
+        async function claimDaily() {
+          const res = await api('/api/claim', { userId: currentUser.id });
+          alert(res.msg);
+          renderDashboard();
+        }
+
+        async function renderAdmin() {
+          const res = await api('/api/admin/data', {});
+          document.getElementById('app').innerHTML = \`
+            <div class="py-4 space-y-6">
+              <div class="flex justify-between items-center bg-slate-900 border border-amber-500/30 p-4 rounded-2xl">
+                <div>
+                  <h2 class="text-lg font-bold text-amber-400">Admin Control Panel</h2>
+                  <p class="text-xs text-slate-400">\${currentUser.phone}</p>
+                </div>
+                <button onclick="logout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold">Logout</button>
+              </div>
+
+              <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                <h3 class="text-sm font-bold text-amber-400 mb-3 uppercase tracking-wider">Deposit Requests (Pending TIDs)</h3>
+                <div class="space-y-3">
+                  \${res.deposits.length === 0 ? '<p class="text-xs text-slate-500">No pending deposits.</p>' : ''}
+                  \${res.deposits.map(d => \`
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                      <div>
+                        <p class="font-bold text-white">User ID: \${d.userId} | Plan: \${d.planName}</p>
+                        <p class="text-amber-400 mt-0.5">TID: \${d.tid} (Rs. \${d.amount})</p>
+                      </div>
+                      <div class="flex gap-2">
+                        <button onclick="approveDeposit(\${d.id}, 'Approved')" class="bg-emerald-500 text-slate-950 px-3 py-1 rounded font-bold">Approve</button>
+                        <button onclick="approveDeposit(\${d.id}, 'Rejected')" class="bg-red-500 text-white px-3 py-1 rounded font-bold">Reject</button>
+                      </div>
+                    </div>
+                  \`).join('')}
+                </div>
+              </div>
+
+              <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                <h3 class="text-sm font-bold text-amber-400 mb-3 uppercase tracking-wider">All Registered Users</h3>
+                <div class="space-y-3">
+                  \${res.users.map(u => \`
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                      <div>
+                        <p class="font-bold text-white">\${u.name} (\${u.phone})</p>
+                        <p class="text-slate-400">Balance: Rs. \${u.balance}</p>
+                      </div>
+                      <button onclick="editBalance(\${u.id})" class="bg-amber-500 text-slate-950 px-3 py-1 rounded font-bold">Edit Balance</button>
+                    </div>
+                  \`).join('')}
+                </div>
+              </div>
+            </div>
+          \`;
+        }
+
+        async function approveDeposit(id, status) {
+          await api('/api/admin/deposit', { id, status });
+          renderAdmin();
+        }
+
+        async function editBalance(userId) {
+          const newBal = prompt('Enter new balance amount:');
+          if(newBal === null) return;
+          await api('/api/admin/bal', { userId, balance: Number(newBal) });
+          renderAdmin();
+        }
+
+        function logout() {
+          currentUser = null;
+          renderLogin();
+        }
+
+        renderLogin();
+      </script>
+    </body>
+    </html>
+  `);
 });
 
-server.listen(3000, () => console.log('VIP Portal Running on Port 3000'));
+app.post('/api/register', (req, res) => {
+  const { name, phone, pass } = req.body;
+  if(db.users.find(u => u.phone === phone)) {
+    return res.send({ ok: false, msg: 'Phone number already registered!' });
+  }
+  const user = { id: db.users.length + 1, name, phone, pass, balance: 0, activePlan: null, lastClaim: null, isAdmin: false };
+  db.users.push(user);
+  res.send({ ok: true });
+});
+
+app.post('/api/login', (req, res) => {
+  const { phone, pass } = req.body;
+  if(phone === ADMIN_PHONE && pass === ADMIN_PASS) {
+    return res.send({ ok: true, user: { id: 999, name: 'Admin', phone: ADMIN_PHONE, isAdmin: true } });
+  }
+  const user = db.users.find(u => u.phone === phone && u.pass === pass);
+  if(!user) return res.send({ ok: false, msg: 'Invalid phone or password!' });
+  res.send({ ok: true, user });
+});
+
+app.post('/api/user', (req, res) => {
+  const user = db.users.find(u => u.id === req.body.id);
+  res.send({ user, plans: db.plans });
+});
+
+app.post('/api/deposit', (req, res) => {
+  const { userId, planId, tid, method } = req.body;
+  const p = db.plans.find(x => x.id === planId);
+  db.deposits.push({ id: db.deposits.length + 1, userId, planId, planName: p.name, amount: p.price, tid, method, status: 'Pending' });
+  res.send({ ok: true, msg: 'Deposit TID submitted! Waiting for Admin approval.' });
+});
+
+app.post('/api/claim', (req, res) => {
+  const user = db.users.find(u => u.id === req.body.userId);
+  if(!user || !user.activePlan) return res.send({ ok: false, msg: 'No active plan found!' });
+  
+  const today = new Date().toDateString();
+  if(user.lastClaim === today) return res.send({ ok: false, msg: 'Already claimed today! Try again tomorrow.' });
+
+  user.balance += user.activePlan.daily;
+  user.lastClaim = today;
+  res.send({ ok: true, msg: 'Daily profit successfully claimed!' });
+});
+
+app.post('/api/admin/data', (req, res) => {
+  res.send({ deposits: db.deposits.filter(d => d.status === 'Pending'), users: db.users });
+});
+
+app.post('/api/admin/deposit', (req, res) => {
+  const { id, status } = req.body;
+  const d = db.deposits.find(x => x.id === id);
+  if(d && d.status === 'Pending') {
+    d.status = status;
+    if(status === 'Approved') {
+      const u = db.users.find(x => x.id === d.userId);
+      const p = db.plans.find(x => x.id === d.planId);
+      if(u && p) u.activePlan = p;
+    }
+  }
+  res.send({ ok: true });
+});
+
+app.post('/api/admin/bal', (req, res) => {
+  const { userId, balance } = req.body;
+  const u = db.users.find(x => x.id === userId);
+  if(u) u.balance = balance;
+  res.send({ ok: true });
+});
+
+server = app.listen(3000, () => console.log('VIP Portal Running on Port 3000'));
