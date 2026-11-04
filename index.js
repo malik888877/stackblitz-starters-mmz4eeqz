@@ -6,12 +6,12 @@ app.use(express.json());
 const db = {
   users: [],
   plans: [
-    { id: 1, name: 'VIP 1 - Starter', price: 500, daily: 50, days: 30 },
-    { id: 2, name: 'VIP 2 - Bronze', price: 1500, daily: 150, days: 30 },
-    { id: 3, name: 'VIP 3 - Silver', price: 3000, daily: 300, days: 30 },
-    { id: 4, name: 'VIP 4 - Gold', price: 6000, daily: 600, days: 30 },
-    { id: 5, name: 'VIP 5 - Platinum', price: 15000, daily: 1500, days: 30 },
-    { id: 6, name: 'VIP 6 - Diamond', price: 50000, daily: 5000, days: 30 }
+    { id: 1, name: 'VIP 1 - Starter Elite', price: 500, daily: 50, days: 30 },
+    { id: 2, name: 'VIP 2 - Bronze Venture', price: 1500, daily: 150, days: 30 },
+    { id: 3, name: 'VIP 3 - Silver Capital', price: 3000, daily: 300, days: 30 },
+    { id: 4, name: 'VIP 4 - Gold Tycoon', price: 6000, daily: 600, days: 30 },
+    { id: 5, name: 'VIP 5 - Platinum Empire', price: 15000, daily: 1500, days: 30 },
+    { id: 6, name: 'VIP 6 - Diamond Syndicate', price: 50000, daily: 5000, days: 30 }
   ],
   deposits: [],
   withdrawals: []
@@ -27,16 +27,33 @@ app.get('/', (req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>VIP Earn PK - Official Portal</title>
+      <title>VIP Earn PK - Millionaire Investment Hub</title>
       <script src="https://cdn.tailwindcss.com"></script>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+      <style>
+        @keyframes glow {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 0.8; }
+        }
+        .animate-glow { animation: glow 4s ease-in-out infinite; }
+        .glass-card {
+          background: rgba(15, 23, 42, 0.75);
+          backdrop-filter: blur(16px);
+          border: 1px solid rgba(234, 179, 8, 0.2);
+        }
+      </style>
     </head>
-    <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between">
-      <div id="app" class="max-w-md mx-auto w-full p-4 flex-grow"></div>
+    <body class="bg-black text-slate-100 font-sans min-h-screen flex flex-col justify-between relative overflow-x-hidden">
+      
+      <!-- Background Luxury Glow Elements -->
+      <div class="absolute top-0 left-1/4 w-96 h-96 bg-amber-600/10 rounded-full blur-3xl pointer-events-none animate-glow"></div>
+      <div class="absolute bottom-10 right-1/4 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none animate-glow"></div>
+
+      <div id="app" class="max-w-md mx-auto w-full p-4 flex-grow z-10"></div>
       
       <!-- WhatsApp Support Floating Button -->
-      <a href="https://wa.me/923256098796" target="_blank" class="fixed bottom-5 right-5 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-sm font-bold z-50 transition transform hover:scale-105">
-        <i class="fab fa-whatsapp text-xl"></i> WhatsApp Support
+      <a href="https://wa.me/923256098796" target="_blank" class="fixed bottom-5 right-5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-sm font-bold z-50 transition transform hover:scale-110 border border-emerald-400/30">
+        <i class="fab fa-whatsapp text-xl"></i> VIP Support
       </a>
 
       <script>
@@ -53,38 +70,40 @@ app.get('/', (req, res) => {
 
         function renderLogin() {
           document.getElementById('app').innerHTML = \`
-            <div class="flex items-center justify-center mt-12">
-              <div class="bg-slate-900 border border-amber-500/30 p-8 rounded-2xl shadow-2xl w-full relative overflow-hidden">
-                <div class="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
+            <div class="flex items-center justify-center min-h-[85vh]">
+              <div class="glass-card p-8 rounded-3xl shadow-2xl w-full relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl"></div>
+                
                 <div class="text-center mb-8">
-                  <div class="inline-block p-3 bg-amber-500/10 text-amber-400 rounded-full text-3xl mb-3 shadow-inner">
-                    <i class="fas fa-gem"></i>
+                  <div class="inline-flex p-4 bg-gradient-to-tr from-amber-500/20 to-yellow-300/30 text-amber-400 rounded-2xl text-4xl mb-4 shadow-inner border border-amber-500/30">
+                    <i class="fas fa-crown"></i>
                   </div>
-                  <h1 class="text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">VIP Earn PK</h1>
-                  <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest">Secure Investment Portal</p>
+                  <h1 class="text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-200">VIP EARN PK</h1>
+                  <p class="text-xs text-amber-400/70 mt-1 uppercase tracking-widest font-semibold">Exclusive Wealth Portal</p>
                 </div>
                 
                 <form onsubmit="handleLogin(event)" class="space-y-5">
                   <div>
-                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Mobile Number</label>
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1.5 tracking-wider">Mobile Number</label>
                     <div class="relative">
-                      <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fas fa-phone"></i></span>
-                      <input type="text" id="phone" required placeholder="03001234567" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 pl-10 text-white focus:outline-none focus:border-amber-500 transition">
+                      <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-amber-500/70"><i class="fas fa-mobile-alt"></i></span>
+                      <input type="text" id="phone" required placeholder="03001234567" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-white focus:outline-none focus:border-amber-400 transition shadow-inner">
                     </div>
                   </div>
                   <div>
-                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Password</label>
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1.5 tracking-wider">Security Password</label>
                     <div class="relative">
-                      <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fas fa-lock"></i></span>
-                      <input type="password" id="pass" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 pl-10 text-white focus:outline-none focus:border-amber-500 transition">
+                      <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-amber-500/70"><i class="fas fa-shield-alt"></i></span>
+                      <input type="password" id="pass" required placeholder="••••••••" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-white focus:outline-none focus:border-amber-400 transition shadow-inner">
                     </div>
                   </div>
-                  <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-extrabold py-3.5 rounded-xl shadow-lg hover:from-amber-400 hover:to-yellow-300 transition transform active:scale-95">
-                    Secure Login
+                  <button type="submit" class="w-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black py-4 rounded-xl shadow-lg hover:brightness-110 transition transform active:scale-95 tracking-wide text-sm uppercase">
+                    Access Dashboard <i class="fas fa-arrow-right ml-1"></i>
                   </button>
                 </form>
+                
                 <div class="text-center mt-6">
-                  <button onclick="renderRegister()" class="text-amber-400 text-sm hover:underline font-medium">New member? Create Account</button>
+                  <button onclick="renderRegister()" class="text-amber-400 text-sm hover:text-amber-300 font-semibold tracking-wide transition">New Elite Member? <span class="underline">Create Account</span></button>
                 </div>
               </div>
             </div>
@@ -93,29 +112,32 @@ app.get('/', (req, res) => {
 
         function renderRegister() {
           document.getElementById('app').innerHTML = \`
-            <div class="flex items-center justify-center mt-12">
-              <div class="bg-slate-900 border border-amber-500/30 p-8 rounded-2xl shadow-2xl w-full">
+            <div class="flex items-center justify-center min-h-[85vh]">
+              <div class="glass-card p-8 rounded-3xl shadow-2xl w-full">
                 <div class="text-center mb-8">
-                  <h1 class="text-2xl font-bold text-amber-400">Create Account</h1>
-                  <p class="text-xs text-slate-400 mt-1">Join VIP Earn PK Today</p>
+                  <div class="inline-flex p-3 bg-amber-500/20 text-amber-400 rounded-2xl text-3xl mb-3 border border-amber-500/30">
+                    <i class="fas fa-user-plus"></i>
+                  </div>
+                  <h1 class="text-2xl font-black text-amber-400 tracking-wider">Join Elite Circle</h1>
+                  <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest">Start Your Millionaire Journey</p>
                 </div>
                 <form onsubmit="handleRegister(event)" class="space-y-4">
                   <div>
-                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Full Name</label>
-                    <input type="text" id="name" required placeholder="Ali Khan" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500">
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Full Name</label>
+                    <input type="text" id="name" required placeholder="Muhammad Ali" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-400">
                   </div>
                   <div>
-                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Mobile Number</label>
-                    <input type="text" id="phone" required placeholder="03001234567" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500">
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Mobile Number</label>
+                    <input type="text" id="phone" required placeholder="03001234567" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-400">
                   </div>
                   <div>
-                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Password</label>
-                    <input type="password" id="pass" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500">
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Password</label>
+                    <input type="password" id="pass" required placeholder="••••••••" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-400">
                   </div>
-                  <button type="submit" class="w-full bg-amber-500 text-slate-950 font-bold py-3.5 rounded-xl hover:bg-amber-400 transition">Register Now</button>
+                  <button type="submit" class="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black py-3.5 rounded-xl hover:brightness-110 transition uppercase tracking-wide shadow-lg">Register Account</button>
                 </form>
-                <div class="text-center mt-4">
-                  <button onclick="renderLogin()" class="text-slate-400 text-sm hover:text-amber-400">Already have an account? Login</button>
+                <div class="text-center mt-5">
+                  <button onclick="renderLogin()" class="text-slate-400 text-sm hover:text-amber-400 transition">Already a member? <span class="text-amber-400 underline font-semibold">Login</span></button>
                 </div>
               </div>
             </div>
@@ -138,7 +160,7 @@ app.get('/', (req, res) => {
           e.preventDefault();
           const res = await api('/api/register', { name: document.getElementById('name').value, phone: document.getElementById('phone').value, pass: document.getElementById('pass').value });
           if(res.ok) {
-            alert('Account created successfully! Please login.');
+            alert('Elite account created successfully! Please login.');
             renderLogin();
           } else {
             alert(res.msg);
@@ -151,47 +173,45 @@ app.get('/', (req, res) => {
           const plans = res.plans;
 
           document.getElementById('app').innerHTML = \`
-            <div class="py-4 space-y-6">
-              <div class="flex justify-between items-center bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-lg">
+            <div class="py-6 space-y-6">
+              <div class="flex justify-between items-center glass-card p-4 rounded-2xl shadow-xl">
                 <div>
-                  <h2 class="text-lg font-bold text-amber-400">Welcome, \${currentUser.name}</h2>
+                  <span class="text-[10px] uppercase tracking-widest bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-black">VIP Member</span>
+                  <h2 class="text-lg font-black text-white mt-1">\${currentUser.name}</h2>
                   <p class="text-xs text-slate-400">\${currentUser.phone}</p>
                 </div>
-                <button onclick="logout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-red-500 hover:text-white transition">Logout</button>
+                <button onclick="logout()" class="bg-red-500/10 text-red-400 border border-red-500/30 px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-red-500 hover:text-white transition">Logout</button>
               </div>
 
-              <div class="bg-gradient-to-br from-amber-600 to-yellow-500 p-6 rounded-2xl shadow-2xl text-slate-950">
-                <p class="text-xs uppercase font-extrabold tracking-wider opacity-80">Total Wallet Balance</p>
-                <h1 class="text-3xl font-black mt-1">Rs. \${currentUser.balance.toLocaleString()}</h1>
-                <div class="mt-4 flex gap-3">
-                  <button onclick="claimDaily()" class="flex-1 bg-slate-950 text-amber-400 font-bold py-2.5 px-4 rounded-xl text-sm shadow hover:bg-slate-900 transition flex items-center justify-center gap-2">
-                    <i class="fas fa-bolt"></i> Claim Daily Profit
+              <div class="bg-gradient-to-br from-amber-500 via-yellow-400 to-amber-600 p-6 rounded-3xl shadow-2xl text-slate-950 relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 text-slate-950/10 text-9xl font-black pointer-events-none"><i class="fas fa-wallet"></i></div>
+                <p class="text-xs uppercase font-black tracking-widest opacity-80">Total Wealth Portfolio</p>
+                <h1 class="text-4xl font-black mt-1">Rs. \${currentUser.balance.toLocaleString()}</h1>
+                <div class="mt-5 flex gap-3">
+                  <button onclick="claimDaily()" class="flex-1 bg-slate-950 text-amber-400 font-extrabold py-3 px-4 rounded-xl text-sm shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-2 border border-amber-400/40">
+                    <i class="fas fa-bolt text-amber-400"></i> Claim Daily ROI
                   </button>
                 </div>
               </div>
 
               \${currentUser.activePlan ? \`
-                <div class="bg-slate-900 border border-emerald-500/30 p-5 rounded-2xl">
-                  <div class="flex justify-between items-center">
-                    <div>
-                      <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">Active VIP Plan</span>
-                      <h3 class="font-bold text-lg text-white mt-1">\${currentUser.activePlan.name}</h3>
-                      <p class="text-xs text-slate-400 mt-0.5">Daily Profit: Rs. \${currentUser.activePlan.daily}</p>
-                    </div>
-                  </div>
+                <div class="glass-card p-5 rounded-2xl border-emerald-500/40 shadow-xl relative overflow-hidden">
+                  <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-3 py-1 rounded-bl-xl">Active Investment</div>
+                  <h3 class="font-black text-lg text-white">\${currentUser.activePlan.name}</h3>
+                  <p class="text-xs text-emerald-400 mt-1 font-bold"><i class="fas fa-check-circle"></i> Daily Earning: Rs. \${currentUser.activePlan.daily} / day</p>
                 </div>
               \` : ''}
 
               <div>
-                <h3 class="text-md font-bold mb-3 text-slate-200">Investment Tiers</h3>
-                <div class="grid grid-cols-1 gap-3">
+                <h3 class="text-md font-black mb-4 text-amber-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-gem"></i> Elite Investment Tiers</h3>
+                <div class="grid grid-cols-1 gap-3.5">
                   \${plans.map(p => \`
-                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex justify-between items-center">
+                    <div class="glass-card p-4.5 rounded-2xl flex justify-between items-center transition hover:border-amber-400/60 shadow-lg">
                       <div>
-                        <h4 class="font-bold text-amber-400">\${p.name}</h4>
-                        <p class="text-xs text-slate-400">Price: Rs. \${p.price} | Daily: <span class="text-emerald-400 font-bold">Rs. \${p.daily}</span></p>
+                        <h4 class="font-black text-amber-300 text-base">\${p.name}</h4>
+                        <p class="text-xs text-slate-300 mt-0.5">Price: <span class="font-bold text-white">Rs. \${p.price}</span> | Daily Return: <span class="text-emerald-400 font-black">Rs. \${p.daily}</span></p>
                       </div>
-                      <button onclick="buyPlan(\${p.id})" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition">Invest Now</button>
+                      <button onclick="buyPlan(\${p.id})" class="bg-gradient-to-r from-amber-400 to-yellow-400 hover:brightness-110 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs uppercase tracking-wider shadow-md transition">Invest</button>
                     </div>
                   \`).join('')}
                 </div>
@@ -201,7 +221,7 @@ app.get('/', (req, res) => {
         }
 
         async function buyPlan(planId) {
-          const tid = prompt('Please send money to EasyPaisa/JazzCash (Admin: 03256098796) and enter your Transaction ID (TID):');
+          const tid = prompt('Send funds via EasyPaisa/JazzCash (Admin Account: 03256098796) and enter your 11-digit Transaction ID (TID):');
           if(!tid) return;
           const res = await api('/api/deposit', { userId: currentUser.id, planId, tid, method: 'EasyPaisa' });
           alert(res.msg);
@@ -217,44 +237,45 @@ app.get('/', (req, res) => {
         async function renderAdmin() {
           const res = await api('/api/admin/data', {});
           document.getElementById('app').innerHTML = \`
-            <div class="py-4 space-y-6">
-              <div class="flex justify-between items-center bg-slate-900 border border-amber-500/30 p-4 rounded-2xl">
+            <div class="py-6 space-y-6">
+              <div class="flex justify-between items-center glass-card border-amber-500/40 p-5 rounded-2xl shadow-xl">
                 <div>
-                  <h2 class="text-lg font-bold text-amber-400">Admin Control Panel</h2>
+                  <span class="text-[10px] uppercase font-black bg-amber-500 text-slate-950 px-2 py-0.5 rounded">Master Admin</span>
+                  <h2 class="text-lg font-black text-amber-400 mt-1">Control Syndicate</h2>
                   <p class="text-xs text-slate-400">\${currentUser.phone}</p>
                 </div>
                 <button onclick="logout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold">Logout</button>
               </div>
 
-              <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-                <h3 class="text-sm font-bold text-amber-400 mb-3 uppercase tracking-wider">Deposit Requests (Pending TIDs)</h3>
+              <div class="glass-card p-5 rounded-2xl shadow-xl">
+                <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-clock"></i> Pending Deposit Requests</h3>
                 <div class="space-y-3">
-                  \${res.deposits.length === 0 ? '<p class="text-xs text-slate-500">No pending deposits.</p>' : ''}
+                  \${res.deposits.length === 0 ? '<p class="text-xs text-slate-500 italic">No pending requests.</p>' : ''}
                   \${res.deposits.map(d => \`
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                    <div class="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
                       <div>
-                        <p class="font-bold text-white">User ID: \${d.userId} | Plan: \${d.planName}</p>
-                        <p class="text-amber-400 mt-0.5">TID: \${d.tid} (Rs. \${d.amount})</p>
+                        <p class="font-bold text-white">User ID: \${d.userId} | <span class="text-amber-400">\${d.planName}</span></p>
+                        <p class="text-slate-300 mt-1">TID: <span class="font-mono text-yellow-300 font-bold">\${d.tid}</span> (Rs. \${d.amount})</p>
                       </div>
                       <div class="flex gap-2">
-                        <button onclick="approveDeposit(\${d.id}, 'Approved')" class="bg-emerald-500 text-slate-950 px-3 py-1 rounded font-bold">Approve</button>
-                        <button onclick="approveDeposit(\${d.id}, 'Rejected')" class="bg-red-500 text-white px-3 py-1 rounded font-bold">Reject</button>
+                        <button onclick="approveDeposit(\${d.id}, 'Approved')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-3 py-1.5 rounded-lg font-black">Approve</button>
+                        <button onclick="approveDeposit(\${d.id}, 'Rejected')" class="bg-rose-500 hover:bg-rose-400 text-white px-3 py-1.5 rounded-lg font-black">Reject</button>
                       </div>
                     </div>
                   \`).join('')}
                 </div>
               </div>
 
-              <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-                <h3 class="text-sm font-bold text-amber-400 mb-3 uppercase tracking-wider">All Registered Users</h3>
+              <div class="glass-card p-5 rounded-2xl shadow-xl">
+                <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-users"></i> Registered Elite Users</h3>
                 <div class="space-y-3">
                   \${res.users.map(u => \`
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                    <div class="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
                       <div>
-                        <p class="font-bold text-white">\${u.name} (\${u.phone})</p>
-                        <p class="text-slate-400">Balance: Rs. \${u.balance}</p>
+                        <p class="font-black text-white">\${u.name} <span class="text-slate-400 font-normal">(\${u.phone})</span></p>
+                        <p class="text-amber-400 font-bold mt-0.5">Balance: Rs. \${u.balance.toLocaleString()}</p>
                       </div>
-                      <button onclick="editBalance(\${u.id})" class="bg-amber-500 text-slate-950 px-3 py-1 rounded font-bold">Edit Balance</button>
+                      <button onclick="editBalance(\${u.id})" class="bg-amber-400 hover:bg-amber-300 text-slate-950 px-3 py-1.5 rounded-lg font-black">Edit Balance</button>
                     </div>
                   \`).join('')}
                 </div>
@@ -269,7 +290,7 @@ app.get('/', (req, res) => {
         }
 
         async function editBalance(userId) {
-          const newBal = prompt('Enter new balance amount:');
+          const newBal = prompt('Enter new millionaire balance amount:');
           if(newBal === null) return;
           await api('/api/admin/bal', { userId, balance: Number(newBal) });
           renderAdmin();
@@ -300,10 +321,10 @@ app.post('/api/register', (req, res) => {
 app.post('/api/login', (req, res) => {
   const { phone, pass } = req.body;
   if(phone === ADMIN_PHONE && pass === ADMIN_PASS) {
-    return res.send({ ok: true, user: { id: 999, name: 'Admin', phone: ADMIN_PHONE, isAdmin: true } });
+    return res.send({ ok: true, user: { id: 999, name: 'Syndicate Boss', phone: ADMIN_PHONE, isAdmin: true } });
   }
   const user = db.users.find(u => u.phone === phone && u.pass === pass);
-  if(!user) return res.send({ ok: false, msg: 'Invalid phone or password!' });
+  if(!user) return res.send({ ok: false, msg: 'Invalid credentials!' });
   res.send({ ok: true, user });
 });
 
@@ -316,19 +337,19 @@ app.post('/api/deposit', (req, res) => {
   const { userId, planId, tid, method } = req.body;
   const p = db.plans.find(x => x.id === planId);
   db.deposits.push({ id: db.deposits.length + 1, userId, planId, planName: p.name, amount: p.price, tid, method, status: 'Pending' });
-  res.send({ ok: true, msg: 'Deposit TID submitted! Waiting for Admin approval.' });
+  res.send({ ok: true, msg: 'Deposit submission successful! Pending Admin validation.' });
 });
 
 app.post('/api/claim', (req, res) => {
   const user = db.users.find(u => u.id === req.body.userId);
-  if(!user || !user.activePlan) return res.send({ ok: false, msg: 'No active plan found!' });
+  if(!user || !user.activePlan) return res.send({ ok: false, msg: 'No active investment tier found!' });
   
   const today = new Date().toDateString();
-  if(user.lastClaim === today) return res.send({ ok: false, msg: 'Already claimed today! Try again tomorrow.' });
+  if(user.lastClaim === today) return res.send({ ok: false, msg: 'Daily profit already claimed for today!' });
 
   user.balance += user.activePlan.daily;
   user.lastClaim = today;
-  res.send({ ok: true, msg: 'Daily profit successfully claimed!' });
+  res.send({ ok: true, msg: 'Daily profit successfully added to wallet!' });
 });
 
 app.post('/api/admin/data', (req, res) => {
@@ -358,5 +379,5 @@ app.post('/api/admin/bal', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`VIP Portal Running on Port ${PORT}`);
+  console.log(`VIP Millionaire Portal Running on Port ${PORT}`);
 });
