@@ -19,6 +19,7 @@ const db = {
 
 const ADMIN_PHONE = '03256098796';
 const ADMIN_PASS = 'admin123';
+const COMPANY_ACCOUNT = '03256098796 (JazzCash / EasyPaisa)';
 
 app.get('/', (req, res) => {
   res.send(`
@@ -37,9 +38,9 @@ app.get('/', (req, res) => {
         }
         .animate-glow { animation: glow 4s ease-in-out infinite; }
         .glass-card {
-          background: rgba(15, 23, 42, 0.75);
+          background: rgba(15, 23, 42, 0.85);
           backdrop-filter: blur(16px);
-          border: 1px solid rgba(234, 179, 8, 0.2);
+          border: 1px solid rgba(234, 179, 8, 0.25);
         }
       </style>
     </head>
@@ -188,8 +189,14 @@ app.get('/', (req, res) => {
                 <p class="text-xs uppercase font-black tracking-widest opacity-80">Total Wealth Portfolio</p>
                 <h1 class="text-4xl font-black mt-1">Rs. \${currentUser.balance.toLocaleString()}</h1>
                 <div class="mt-5 flex gap-3">
-                  <button onclick="claimDaily()" class="flex-1 bg-slate-950 text-amber-400 font-extrabold py-3 px-4 rounded-xl text-sm shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-2 border border-amber-400/40">
-                    <i class="fas fa-bolt text-amber-400"></i> Claim Daily ROI
+                  <button onclick="claimDaily()" class="flex-1 bg-slate-950 text-amber-400 font-extrabold py-3 px-3 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1.5 border border-amber-400/40">
+                    <i class="fas fa-bolt text-amber-400"></i> Claim ROI
+                  </button>
+                  <button onclick="renderDepositModal()" class="flex-1 bg-emerald-600 text-white font-extrabold py-3 px-3 rounded-xl text-xs shadow-xl hover:bg-emerald-500 transition flex items-center justify-center gap-1.5">
+                    <i class="fas fa-plus-circle"></i> Deposit
+                  </button>
+                  <button onclick="renderWithdrawModal()" class="flex-1 bg-slate-950 text-rose-400 font-extrabold py-3 px-3 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1.5 border border-rose-500/30">
+                    <i class="fas fa-arrow-alt-circle-down"></i> Withdraw
                   </button>
                 </div>
               </div>
@@ -220,10 +227,100 @@ app.get('/', (req, res) => {
           \`;
         }
 
+        function renderDepositModal() {
+          document.getElementById('app').innerHTML = \`
+            <div class="py-6">
+              <div class="glass-card p-6 rounded-3xl shadow-2xl relative">
+                <div class="flex justify-between items-center mb-6">
+                  <h2 class="text-lg font-black text-amber-400"><i class="fas fa-university"></i> Fund Deposit</h2>
+                  <button onclick="renderDashboard()" class="text-slate-400 hover:text-white font-bold text-sm"><i class="fas fa-times text-lg"></i></button>
+                </div>
+                <div class="bg-slate-950 p-4 rounded-2xl border border-amber-500/30 mb-5">
+                  <p class="text-xs text-slate-400 uppercase font-semibold">Send money to our official account:</p>
+                  <p class="text-lg font-black text-amber-300 mt-1 font-mono">${COMPANY_ACCOUNT}</p>
+                  <p class="text-[11px] text-slate-500 mt-1">After payment, enter your Transaction ID (TID) below.</p>
+                </div>
+                <form onsubmit="submitDeposit(event)" class="space-y-4">
+                  <div>
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Select Plan to Buy</label>
+                    <select id="depPlan" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-amber-400">
+                      <option value="0">Add Balance Only (General Deposit)</option>
+                      <option value="1">VIP 1 - Starter Elite (Rs. 500)</option>
+                      <option value="2">VIP 2 - Bronze Venture (Rs. 1500)</option>
+                      <option value="3">VIP 3 - Silver Capital (Rs. 3000)</option>
+                      <option value="4">VIP 4 - Gold Tycoon (Rs. 6000)</option>
+                      <option value="5">VIP 5 - Platinum Empire (Rs. 15000)</option>
+                      <option value="6">VIP 6 - Diamond Syndicate (Rs. 50000)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Transaction ID (TID)</label>
+                    <input type="text" id="depTid" required placeholder="e.g. 8392019283" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-amber-400">
+                  </div>
+                  <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3.5 rounded-xl uppercase tracking-wider text-xs shadow-lg transition">Submit Deposit Slip</button>
+                </form>
+              </div>
+            </div>
+          \`;
+        }
+
+        function renderWithdrawModal() {
+          document.getElementById('app').innerHTML = \`
+            <div class="py-6">
+              <div class="glass-card p-6 rounded-3xl shadow-2xl relative">
+                <div class="flex justify-between items-center mb-6">
+                  <h2 class="text-lg font-black text-rose-400"><i class="fas fa-wallet"></i> Request Withdrawal</h2>
+                  <button onclick="renderDashboard()" class="text-slate-400 hover:text-white font-bold text-sm"><i class="fas fa-times text-lg"></i></button>
+                </div>
+                <form onsubmit="submitWithdraw(event)" class="space-y-4">
+                  <div>
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Withdrawal Method</label>
+                    <select id="wMethod" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-rose-400">
+                      <option value="JazzCash">JazzCash</option>
+                      <option value="EasyPaisa">EasyPaisa</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Account Number</label>
+                    <input type="text" id="wAcc" required placeholder="03001234567" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-rose-400">
+                  </div>
+                  <div>
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Amount (Rs.)</label>
+                    <input type="number" id="wAmount" required placeholder="1000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-rose-400">
+                  </div>
+                  <button type="submit" class="w-full bg-rose-500 hover:bg-rose-400 text-white font-black py-3.5 rounded-xl uppercase tracking-wider text-xs shadow-lg transition">Submit Withdrawal Request</button>
+                </form>
+              </div>
+            </div>
+          \`;
+        }
+
         async function buyPlan(planId) {
-          const tid = prompt('Send funds via EasyPaisa/JazzCash (Admin Account: 03256098796) and enter your 11-digit Transaction ID (TID):');
-          if(!tid) return;
-          const res = await api('/api/deposit', { userId: currentUser.id, planId, tid, method: 'EasyPaisa' });
+          const tid = document.getElementById('depTid') ? document.getElementById('depTid').value : prompt('Send funds to JazzCash/EasyPaisa: ' + COMPANY_ACCOUNT + ' and enter TID:');
+          if(!tid) {
+            renderDepositModal();
+            return;
+          }
+          const res = await api('/api/deposit', { userId: currentUser.id, planId, tid, method: 'JazzCash' });
+          alert(res.msg);
+          renderDashboard();
+        }
+
+        async function submitDeposit(e) {
+          e.preventDefault();
+          const planId = Number(document.getElementById('depPlan').value);
+          const tid = document.getElementById('depTid').value;
+          const res = await api('/api/deposit', { userId: currentUser.id, planId, tid, method: 'JazzCash' });
+          alert(res.msg);
+          renderDashboard();
+        }
+
+        async function submitWithdraw(e) {
+          e.preventDefault();
+          const method = document.getElementById('wMethod').value;
+          const account = document.getElementById('wAcc').value;
+          const amount = Number(document.getElementById('wAmount').value);
+          const res = await api('/api/withdraw', { userId: currentUser.id, method, account, amount });
           alert(res.msg);
           renderDashboard();
         }
@@ -247,10 +344,11 @@ app.get('/', (req, res) => {
                 <button onclick="logout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold">Logout</button>
               </div>
 
+              <!-- Deposits Section -->
               <div class="glass-card p-5 rounded-2xl shadow-xl">
-                <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-clock"></i> Pending Deposit Requests</h3>
+                <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-clock"></i> Pending Deposit TIDs</h3>
                 <div class="space-y-3">
-                  \${res.deposits.length === 0 ? '<p class="text-xs text-slate-500 italic">No pending requests.</p>' : ''}
+                  \${res.deposits.length === 0 ? '<p class="text-xs text-slate-500 italic">No pending deposits.</p>' : ''}
                   \${res.deposits.map(d => \`
                     <div class="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
                       <div>
@@ -266,6 +364,27 @@ app.get('/', (req, res) => {
                 </div>
               </div>
 
+              <!-- Withdrawals Section -->
+              <div class="glass-card p-5 rounded-2xl shadow-xl">
+                <h3 class="text-sm font-black text-rose-400 mb-3 uppercase tracking-wider"><i class="fas fa-money-bill-wave"></i> Pending Withdrawals</h3>
+                <div class="space-y-3">
+                  \${res.withdrawals.length === 0 ? '<p class="text-xs text-slate-500 italic">No pending withdrawals.</p>' : ''}
+                  \${res.withdrawals.map(w => \`
+                    <div class="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                      <div>
+                        <p class="font-bold text-white">User ID: \${w.userId} | <span class="text-rose-400">Rs. \${w.amount}</span></p>
+                        <p class="text-slate-300 mt-1">\${w.method}: <span class="font-mono text-yellow-300 font-bold">\${w.account}</span></p>
+                      </div>
+                      <div class="flex gap-2">
+                        <button onclick="approveWithdraw(\${w.id}, 'Approved')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-3 py-1.5 rounded-lg font-black">Approve</button>
+                        <button onclick="approveWithdraw(\${w.id}, 'Rejected')" class="bg-rose-500 hover:bg-rose-400 text-white px-3 py-1.5 rounded-lg font-black">Reject</button>
+                      </div>
+                    </div>
+                  \`).join('')}
+                </div>
+              </div>
+
+              <!-- Users Section -->
               <div class="glass-card p-5 rounded-2xl shadow-xl">
                 <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-users"></i> Registered Elite Users</h3>
                 <div class="space-y-3">
@@ -286,6 +405,11 @@ app.get('/', (req, res) => {
 
         async function approveDeposit(id, status) {
           await api('/api/admin/deposit', { id, status });
+          renderAdmin();
+        }
+
+        async function approveWithdraw(id, status) {
+          await api('/api/admin/withdraw', { id, status });
           renderAdmin();
         }
 
@@ -335,9 +459,19 @@ app.post('/api/user', (req, res) => {
 
 app.post('/api/deposit', (req, res) => {
   const { userId, planId, tid, method } = req.body;
-  const p = db.plans.find(x => x.id === planId);
-  db.deposits.push({ id: db.deposits.length + 1, userId, planId, planName: p.name, amount: p.price, tid, method, status: 'Pending' });
+  const p = planId > 0 ? db.plans.find(x => x.id === Number(planId)) : { name: 'General Balance Deposit', price: 0 };
+  db.deposits.push({ id: db.deposits.length + 1, userId, planId: Number(planId), planName: p.name, amount: p.price || 0, tid, method, status: 'Pending' });
   res.send({ ok: true, msg: 'Deposit submission successful! Pending Admin validation.' });
+});
+
+app.post('/api/withdraw', (req, res) => {
+  const { userId, method, account, amount } = req.body;
+  const user = db.users.find(u => u.id === Number(userId));
+  if (!user || user.balance < amount) {
+    return res.send({ ok: false, msg: 'Insufficient balance for withdrawal!' });
+  }
+  db.withdrawals.push({ id: db.withdrawals.length + 1, userId: Number(userId), method, account, amount: Number(amount), status: 'Pending' });
+  res.send({ ok: true, msg: 'Withdrawal request submitted successfully! Pending Admin approval.' });
 });
 
 app.post('/api/claim', (req, res) => {
@@ -353,12 +487,12 @@ app.post('/api/claim', (req, res) => {
 });
 
 app.post('/api/admin/data', (req, res) => {
-  res.send({ deposits: db.deposits.filter(d => d.status === 'Pending'), users: db.users });
+  res.send({ deposits: db.deposits.filter(d => d.status === 'Pending'), withdrawals: db.withdrawals.filter(w => w.status === 'Pending'), users: db.users });
 });
 
 app.post('/api/admin/deposit', (req, res) => {
   const { id, status } = req.body;
-  const d = db.deposits.find(x => x.id === id);
+  const d = db.deposits.find(x => x.id === Number(id));
   if(d && d.status === 'Pending') {
     d.status = status;
     if(status === 'Approved') {
@@ -370,10 +504,25 @@ app.post('/api/admin/deposit', (req, res) => {
   res.send({ ok: true });
 });
 
+app.post('/api/admin/withdraw', (req, res) => {
+  const { id, status } = req.body;
+  const w = db.withdrawals.find(x => x.id === Number(id));
+  if(w && w.status === 'Pending') {
+    w.status = status;
+    if(status === 'Approved') {
+      const u = db.users.find(x => x.id === w.userId);
+      if(u && u.balance >= w.amount) {
+        u.balance -= w.amount;
+      }
+    }
+  }
+  res.send({ ok: true });
+});
+
 app.post('/api/admin/bal', (req, res) => {
   const { userId, balance } = req.body;
-  const u = db.users.find(x => x.id === userId);
-  if(u) u.balance = balance;
+  const u = db.users.find(x => x.id === Number(userId));
+  if(u) u.balance = Number(balance);
   res.send({ ok: true });
 });
 
