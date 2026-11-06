@@ -33,12 +33,10 @@ function getUserTeamCount(user) {
 // Helper function to credit 10% Daily ROI + 1% Referral Bonus
 function creditUserROI(user) {
   if (!user || !user.activePlan) return false;
-  // 10% of plan deposit price (matches daily profit: e.g., 500 -> 50)
   const dailyProfit = Number(user.activePlan.daily);
   user.balance = Number((user.balance + dailyProfit).toFixed(2));
   user.lastClaimTime = Date.now();
 
-  // Credit 1% of Daily ROI to the Referrer (Inviter)
   if (user.referredBy) {
     const referrer = db.users.find(u => u.id === Number(user.referredBy));
     if (referrer) {
@@ -228,6 +226,8 @@ app.get('/', (req, res) => {
           const res = await api('/api/user', { id: currentUser.id });
           currentUser = res.user;
           const plans = res.plans;
+          const userDeposits = res.deposits || [];
+          const userWithdrawals = res.withdrawals || [];
           const inviteLink = window.location.origin + '/?ref=' + currentUser.id;
 
           document.getElementById('app').innerHTML = \`
@@ -278,7 +278,7 @@ app.get('/', (req, res) => {
                 </div>
               \`}
 
-              <!-- Invite & Earn 1% Daily Banner (Pure English + Rs. 1,500 Example) -->
+              <!-- Invite & Earn 1% Daily Banner -->
               <div class="glass-card p-5 rounded-3xl border border-amber-400/40 shadow-2xl relative overflow-hidden">
                 <div class="flex items-center justify-between mb-2">
                   <span class="bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 text-[10px] font-black uppercase px-2.5 py-1 rounded-full">🔥 Viral Team Program</span>
@@ -286,7 +286,7 @@ app.get('/', (req, res) => {
                 </div>
                 <h3 class="text-base font-black text-white mt-1">Invite Friends & Earn Unlimited Daily Royalties!</h3>
                 <p class="text-xs text-slate-300 mt-1 leading-relaxed">
-                  Share your unique referral link below! For example, when you deposit <span class="text-amber-300 font-bold">Rs. 1,500</span> and invite a friend through your link who also deposits <span class="text-amber-300 font-bold">Rs. 1,500</span>, your Active Team Invites count increases and you automatically receive <span class="text-amber-400 font-bold">1%</span> of their <span class="text-emerald-400 font-bold">Rs. 150</span> daily profit every single day. The more members you invite who deposit, the bigger your daily passive income grows!
+                  Share your unique referral link below! For example, when you deposit <span class="text-amber-300 font-bold">Rs. 1,500</span> and invite a friend through your link who also deposits <span class="text-amber-300 font-bold">Rs. 1,500</span>, your Active Team Invites count increases and you automatically receive <span class="text-amber-400 font-bold">1%</span> of their <span class="text-emerald-400 font-bold">Rs. 150</span> daily profit every single day.
                 </p>
 
                 <div class="grid grid-cols-2 gap-2.5 my-3">
@@ -305,6 +305,41 @@ app.get('/', (req, res) => {
                   <button onclick="copyText('\${inviteLink}', 'Referral Link')" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-3.5 py-2 rounded-lg text-xs uppercase shrink-0 transition">
                     <i class="fas fa-copy mr-1"></i> Copy Link
                   </button>
+                </div>
+              </div>
+
+              <!-- Deposit & Withdrawal History Sections -->
+              <div class="space-y-4">
+                <div class="glass-card p-4 rounded-2xl shadow-xl">
+                  <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider mb-3"><i class="fas fa-history mr-1"></i> Deposit History</h3>
+                  <div class="space-y-2 max-h-40 overflow-y-auto">
+                    \${userDeposits.length === 0 ? '<p class="text-[11px] text-slate-500 italic">No deposit records found.</p>' : ''}
+                    \${userDeposits.map(d => \`
+                      <div class="bg-slate-950/90 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-[11px]">
+                        <div>
+                          <p class="font-bold text-white">\${d.planName} (Rs. \${d.amount})</p>
+                          <p class="text-slate-400 font-mono">TID: \${d.tid}</p>
+                        </div>
+                        <span class="px-2 py-0.5 rounded font-bold uppercase text-[10px] \${d.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : d.status === 'Rejected' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">\${d.status}</span>
+                      </div>
+                    \`).join('')}
+                  </div>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl shadow-xl">
+                  <h3 class="text-xs font-black text-rose-400 uppercase tracking-wider mb-3"><i class="fas fa-wallet mr-1"></i> Withdrawal History</h3>
+                  <div class="space-y-2 max-h-40 overflow-y-auto">
+                    \${userWithdrawals.length === 0 ? '<p class="text-[11px] text-slate-500 italic">No withdrawal records found.</p>' : ''}
+                    \${userWithdrawals.map(w => \`
+                      <div class="bg-slate-950/90 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-[11px]">
+                        <div>
+                          <p class="font-bold text-white">Rs. \${w.amount} (\${w.method})</p>
+                          <p class="text-slate-400 font-mono">\${w.account}</p>
+                        </div>
+                        <span class="px-2 py-0.5 rounded font-bold uppercase text-[10px] \${w.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : w.status === 'Rejected' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">\${w.status}</span>
+                      </div>
+                    \`).join('')}
+                  </div>
                 </div>
               </div>
 
@@ -336,7 +371,6 @@ app.get('/', (req, res) => {
                   <button onclick="renderDashboard()" class="text-slate-400 hover:text-white font-bold text-sm"><i class="fas fa-times text-lg"></i></button>
                 </div>
 
-                <!-- Official NayaPay Only Payment Details -->
                 <div class="bg-slate-950 p-4 rounded-2xl border border-amber-500/40 mb-5 space-y-3">
                   <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                     <span class="text-[11px] uppercase font-bold text-amber-400">Official Payment Gateway</span>
@@ -553,21 +587,21 @@ app.get('/', (req, res) => {
         async function editBalance(userId, currentBal) {
           const newBal = prompt('Enter new wallet balance (Rs.):', currentBal);
           if(newBal === null || newBal === '') return;
-          await api('/api/admin/bal', { userId, balance: Number(newBal) });
+          await api('/api/admin/bal', { userId: Number(userId), balance: Number(newBal) });
           renderAdmin();
         }
 
         async function editPhone(userId, currentPhone) {
           const newPhone = prompt('Enter new mobile number for User #' + userId + ':', currentPhone);
           if(newPhone === null || newPhone.trim() === '') return;
-          await api('/api/admin/phone', { userId, phone: newPhone.trim() });
+          await api('/api/admin/phone', { userId: Number(userId), phone: newPhone.trim() });
           renderAdmin();
         }
 
         async function editTeam(userId, currentTeam) {
           const newTeam = prompt('Enter new Active Team Invites count for User #' + userId + ':', currentTeam);
           if(newTeam === null || newTeam === '') return;
-          await api('/api/admin/team', { userId, teamCount: Number(newTeam) });
+          await api('/api/admin/team', { userId: Number(userId), teamCount: Number(newTeam) });
           renderAdmin();
         }
 
@@ -590,8 +624,14 @@ app.post('/api/register', (req, res) => {
     return res.send({ ok: false, msg: 'Phone number already registered!' });
   }
   const refId = referredBy ? Number(referredBy) : null;
+  // Generate random 6-digit user ID (e.g., 765342)
+  let randomId;
+  do {
+    randomId = Math.floor(100000 + Math.random() * 900000);
+  } while(db.users.find(u => u.id === randomId));
+
   const user = {
-    id: db.users.length + 1,
+    id: randomId,
     name,
     phone,
     pass,
@@ -618,9 +658,12 @@ app.post('/api/login', (req, res) => {
 });
 
 app.post('/api/user', (req, res) => {
-  const user = db.users.find(u => u.id === Number(req.body.id));
+  const userId = Number(req.body.id);
+  const user = db.users.find(u => u.id === userId);
   const teamCount = getUserTeamCount(user);
-  res.send({ user, plans: db.plans, teamCount });
+  const deposits = db.deposits.filter(d => d.userId === userId);
+  const withdrawals = db.withdrawals.filter(w => w.userId === userId);
+  res.send({ user, plans: db.plans, teamCount, deposits, withdrawals });
 });
 
 app.post('/api/deposit', (req, res) => {
@@ -698,10 +741,8 @@ app.post('/api/admin/deposit', (req, res) => {
       if(u && p) {
         const hadPlanBefore = u.activePlan !== null;
         u.activePlan = p;
-        // Allow immediate first 10% ROI collection upon approval
         u.lastClaimTime = null;
 
-        // If inviter has a custom team count set by admin, increment it when a new referral deposits
         if (!hadPlanBefore && u.referredBy) {
           const referrer = db.users.find(r => r.id === Number(u.referredBy));
           if (referrer && typeof referrer.customTeamCount === 'number') {
