@@ -20,9 +20,20 @@ const db = {
 const ADMIN_PHONE = '03256098796';
 const ADMIN_PASS = 'admin123';
 
-// Helper function to credit Daily ROI + 1% Referral Bonus
+// Helper function to calculate active (deposited) referrals + any admin manual adjustment
+function getUserTeamCount(user) {
+  if (!user) return 0;
+  const depositedRefs = db.users.filter(u => u.referredBy === user.id && u.activePlan !== null).length;
+  if (typeof user.customTeamCount === 'number') {
+    return user.customTeamCount;
+  }
+  return depositedRefs;
+}
+
+// Helper function to credit 10% Daily ROI + 1% Referral Bonus
 function creditUserROI(user) {
   if (!user || !user.activePlan) return false;
+  // 10% of plan deposit price (matches daily profit: e.g., 500 -> 50)
   const dailyProfit = Number(user.activePlan.daily);
   user.balance = Number((user.balance + dailyProfit).toFixed(2));
   user.lastClaimTime = Date.now();
@@ -156,7 +167,7 @@ app.get('/', (req, res) => {
                     <i class="fas fa-user-plus"></i>
                   </div>
                   <h1 class="text-2xl font-black text-amber-400">Join Elite Circle</h1>
-                  <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest">Auto 24h ROI & 1% Daily Team Commission</p>
+                  <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest">10% Daily ROI & 1% Daily Team Commission</p>
                 </div>
                 <form onsubmit="handleRegister(event)" class="space-y-4">
                   <div>
@@ -239,11 +250,11 @@ app.get('/', (req, res) => {
                     <p class="text-xs uppercase font-black tracking-widest opacity-80">Total Wealth Balance</p>
                     <h1 class="text-4xl font-black mt-1">Rs. \${Number(currentUser.balance).toLocaleString()}</h1>
                   </div>
-                  <span class="bg-slate-950 text-amber-400 text-[10px] font-black px-2.5 py-1 rounded-full uppercase">Auto 24h ROI</span>
+                  <span class="bg-slate-950 text-amber-400 text-[10px] font-black px-2.5 py-1 rounded-full uppercase">10% Daily ROI</span>
                 </div>
                 <div class="mt-5 grid grid-cols-3 gap-2.5">
                   <button onclick="claimDaily()" class="bg-slate-950 text-amber-400 font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1.5 border border-amber-400/40">
-                    <i class="fas fa-bolt"></i> Claim ROI
+                    <i class="fas fa-bolt"></i> Collect ROI
                   </button>
                   <button onclick="renderDepositModal(2)" class="bg-emerald-600 text-white font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-emerald-500 transition flex items-center justify-center gap-1.5">
                     <i class="fas fa-plus-circle"></i> Deposit
@@ -259,11 +270,11 @@ app.get('/', (req, res) => {
                 <div class="glass-card p-5 rounded-2xl border-emerald-500/50 shadow-xl relative overflow-hidden">
                   <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-3 py-1 rounded-bl-xl">Active Membership</div>
                   <h3 class="font-black text-lg text-amber-300">\${currentUser.activePlan.name}</h3>
-                  <p class="text-xs text-emerald-400 mt-1 font-bold"><i class="fas fa-sync-alt fa-spin mr-1"></i> Auto-Crediting Rs. \${currentUser.activePlan.daily} Every 24 Hours</p>
+                  <p class="text-xs text-emerald-400 mt-1 font-bold"><i class="fas fa-sync-alt fa-spin mr-1"></i> Daily 10% ROI: Rs. \${currentUser.activePlan.daily} Every 24 Hours</p>
                 </div>
               \` : \`
                 <div class="glass-card p-4 rounded-2xl border-amber-500/30 text-center">
-                  <p class="text-xs text-amber-300 font-bold"><i class="fas fa-info-circle mr-1"></i> Activate a VIP Membership below to start automated 24-hour profits!</p>
+                  <p class="text-xs text-amber-300 font-bold"><i class="fas fa-info-circle mr-1"></i> Activate a VIP Membership below to collect 10% daily profits every 24 hours!</p>
                 </div>
               \`}
 
@@ -275,13 +286,13 @@ app.get('/', (req, res) => {
                 </div>
                 <h3 class="text-base font-black text-white mt-1">Invite Friends & Earn Unlimited Daily Royalties!</h3>
                 <p class="text-xs text-slate-300 mt-1 leading-relaxed">
-                  Share your unique referral link below! For example, when you deposit <span class="text-amber-300 font-bold">Rs. 1,500</span> and invite a friend through your link who also deposits <span class="text-amber-300 font-bold">Rs. 1,500</span>, you will automatically receive <span class="text-amber-400 font-bold">1%</span> of their <span class="text-emerald-400 font-bold">Rs. 150</span> daily profit every single day. The more members you invite, the bigger your daily passive income grows!
+                  Share your unique referral link below! For example, when you deposit <span class="text-amber-300 font-bold">Rs. 1,500</span> and invite a friend through your link who also deposits <span class="text-amber-300 font-bold">Rs. 1,500</span>, your Active Team Invites count increases and you automatically receive <span class="text-amber-400 font-bold">1%</span> of their <span class="text-emerald-400 font-bold">Rs. 150</span> daily profit every single day. The more members you invite who deposit, the bigger your daily passive income grows!
                 </p>
 
                 <div class="grid grid-cols-2 gap-2.5 my-3">
                   <div class="bg-slate-950/90 p-3 rounded-xl border border-slate-800 text-center">
-                    <p class="text-[10px] uppercase text-slate-400 font-bold">Total Team Invites</p>
-                    <p class="text-lg font-black text-amber-400 mt-0.5">\${res.teamCount || 0} Members</p>
+                    <p class="text-[10px] uppercase text-slate-400 font-bold">Active Team Invites</p>
+                    <p class="text-lg font-black text-amber-400 mt-0.5">\${res.teamCount || 0} \${(res.teamCount === 1) ? 'Invite' : 'Invites'}</p>
                   </div>
                   <div class="bg-slate-950/90 p-3 rounded-xl border border-slate-800 text-center">
                     <p class="text-[10px] uppercase text-slate-400 font-bold">1% Referral Bonus</p>
@@ -299,13 +310,13 @@ app.get('/', (req, res) => {
 
               <!-- Investment Tiers -->
               <div>
-                <h3 class="text-sm font-black mb-3 text-amber-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-gem"></i> VIP Investment Tiers (Auto 24h Credit)</h3>
+                <h3 class="text-sm font-black mb-3 text-amber-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-gem"></i> VIP Investment Tiers (10% Daily Return)</h3>
                 <div class="grid grid-cols-1 gap-3">
                   \${plans.map(p => \`
                     <div class="glass-card p-4 rounded-2xl flex justify-between items-center transition hover:border-amber-400/70 shadow-lg">
                       <div>
                         <h4 class="font-black text-amber-300 text-sm">\${p.name}</h4>
-                        <p class="text-xs text-slate-300 mt-1">Deposit: <span class="font-bold text-white">Rs. \${p.price.toLocaleString()}</span> | 24h Profit: <span class="text-emerald-400 font-black">Rs. \${p.daily}</span></p>
+                        <p class="text-xs text-slate-300 mt-1">Deposit: <span class="font-bold text-white">Rs. \${p.price.toLocaleString()}</span> | Daily 10% ROI: <span class="text-emerald-400 font-black">Rs. \${p.daily}</span></p>
                       </div>
                       <button onclick="renderDepositModal(\${p.id})" class="bg-gradient-to-r from-amber-400 to-yellow-400 hover:brightness-110 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs uppercase tracking-wider shadow-md transition">Activate</button>
                     </div>
@@ -506,13 +517,21 @@ app.get('/', (req, res) => {
               <div class="glass-card p-5 rounded-2xl shadow-xl">
                 <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-users mr-1"></i> Registered Elite Users</h3>
                 <div class="space-y-3">
+                  \${res.users.length === 0 ? '<p class="text-xs text-slate-500 italic">No registered users yet.</p>' : ''}
                   \${res.users.map(u => \`
-                    <div class="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
-                      <div>
-                        <p class="font-black text-white">#\${u.id} \${u.name} <span class="text-slate-400 font-normal">(\${u.phone})</span></p>
-                        <p class="text-amber-400 font-bold mt-0.5">Balance: Rs. \${Number(u.balance).toLocaleString()} | Ref By: \${u.referredBy || 'None'}</p>
+                    <div class="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800 space-y-2.5 text-xs">
+                      <div class="flex justify-between items-start">
+                        <div>
+                          <p class="font-black text-white">#\${u.id} \${u.name} <span class="text-amber-300 font-mono">(\${u.phone})</span></p>
+                          <p class="text-amber-400 font-bold mt-0.5">Balance: Rs. \${Number(u.balance).toLocaleString()} | Active Invites: <span class="text-emerald-400">\${u.teamCount}</span></p>
+                          <p class="text-[11px] text-slate-400 mt-0.5">Plan: \${u.activePlan ? u.activePlan.name : 'None'} | Ref By: \${u.referredBy || 'None'}</p>
+                        </div>
                       </div>
-                      <button onclick="editBalance(\${u.id})" class="bg-amber-400 hover:bg-amber-300 text-slate-950 px-3 py-1.5 rounded-lg font-black">Edit Bal</button>
+                      <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/80">
+                        <button onclick="editBalance(\${u.id}, \${u.balance})" class="bg-amber-400 hover:bg-amber-300 text-slate-950 py-1.5 rounded-lg font-black">Edit Bal</button>
+                        <button onclick="editPhone(\${u.id}, '\${u.phone}')" class="bg-sky-400 hover:bg-sky-300 text-slate-950 py-1.5 rounded-lg font-black">Edit Phone</button>
+                        <button onclick="editTeam(\${u.id}, \${u.teamCount})" class="bg-emerald-400 hover:bg-emerald-300 text-slate-950 py-1.5 rounded-lg font-black">Edit Team</button>
+                      </div>
                     </div>
                   \`).join('')}
                 </div>
@@ -531,10 +550,24 @@ app.get('/', (req, res) => {
           renderAdmin();
         }
 
-        async function editBalance(userId) {
-          const newBal = prompt('Enter new wallet balance amount:');
-          if(newBal === null) return;
+        async function editBalance(userId, currentBal) {
+          const newBal = prompt('Enter new wallet balance (Rs.):', currentBal);
+          if(newBal === null || newBal === '') return;
           await api('/api/admin/bal', { userId, balance: Number(newBal) });
+          renderAdmin();
+        }
+
+        async function editPhone(userId, currentPhone) {
+          const newPhone = prompt('Enter new mobile number for User #' + userId + ':', currentPhone);
+          if(newPhone === null || newPhone.trim() === '') return;
+          await api('/api/admin/phone', { userId, phone: newPhone.trim() });
+          renderAdmin();
+        }
+
+        async function editTeam(userId, currentTeam) {
+          const newTeam = prompt('Enter new Active Team Invites count for User #' + userId + ':', currentTeam);
+          if(newTeam === null || newTeam === '') return;
+          await api('/api/admin/team', { userId, teamCount: Number(newTeam) });
           renderAdmin();
         }
 
@@ -567,6 +600,7 @@ app.post('/api/register', (req, res) => {
     lastClaimTime: null,
     referredBy: refId,
     refEarnings: 0,
+    customTeamCount: null,
     isAdmin: false
   };
   db.users.push(user);
@@ -585,7 +619,7 @@ app.post('/api/login', (req, res) => {
 
 app.post('/api/user', (req, res) => {
   const user = db.users.find(u => u.id === Number(req.body.id));
-  const teamCount = db.users.filter(u => u.referredBy === Number(req.body.id)).length;
+  const teamCount = getUserTeamCount(user);
   res.send({ user, plans: db.plans, teamCount });
 });
 
@@ -602,7 +636,7 @@ app.post('/api/deposit', (req, res) => {
     method: 'NayaPay',
     status: 'Pending'
   });
-  res.send({ ok: true, msg: 'NayaPay Deposit TID submitted successfully! Your 24-hour auto-profit plan will activate immediately upon Admin approval.' });
+  res.send({ ok: true, msg: 'NayaPay Deposit TID submitted successfully! Once approved by Admin, you can immediately collect your 10% daily ROI.' });
 });
 
 app.post('/api/withdraw', (req, res) => {
@@ -634,18 +668,22 @@ app.post('/api/claim', (req, res) => {
   const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
   if(user.lastClaimTime && (now - user.lastClaimTime < TWENTY_FOUR_HOURS)) {
     const hoursLeft = Math.ceil((TWENTY_FOUR_HOURS - (now - user.lastClaimTime)) / (1000 * 60 * 60));
-    return res.send({ ok: false, msg: 'Auto-credit system is active! Next daily profit will be credited in ' + hoursLeft + ' hour(s).' });
+    return res.send({ ok: false, msg: 'Daily 10% ROI already collected for today! Next collection available in ' + hoursLeft + ' hour(s).' });
   }
 
   creditUserROI(user);
-  res.send({ ok: true, msg: 'Rs. ' + user.activePlan.daily + ' Daily ROI added to your wallet! (1% referral bonus also credited to your inviter).' });
+  res.send({ ok: true, msg: '10% Daily ROI (Rs. ' + user.activePlan.daily + ') successfully added to your wallet!' });
 });
 
 app.post('/api/admin/data', (req, res) => {
+  const usersWithTeam = db.users.map(u => ({
+    ...u,
+    teamCount: getUserTeamCount(u)
+  }));
   res.send({
     deposits: db.deposits.filter(d => d.status === 'Pending'),
     withdrawals: db.withdrawals.filter(w => w.status === 'Pending'),
-    users: db.users
+    users: usersWithTeam
   });
 });
 
@@ -658,9 +696,18 @@ app.post('/api/admin/deposit', (req, res) => {
       const u = db.users.find(x => x.id === d.userId);
       const p = db.plans.find(x => x.id === d.planId);
       if(u && p) {
+        const hadPlanBefore = u.activePlan !== null;
         u.activePlan = p;
-        // Start the 24-hour cycle from approval moment
-        u.lastClaimTime = Date.now();
+        // Allow immediate first 10% ROI collection upon approval
+        u.lastClaimTime = null;
+
+        // If inviter has a custom team count set by admin, increment it when a new referral deposits
+        if (!hadPlanBefore && u.referredBy) {
+          const referrer = db.users.find(r => r.id === Number(u.referredBy));
+          if (referrer && typeof referrer.customTeamCount === 'number') {
+            referrer.customTeamCount += 1;
+          }
+        }
       }
     }
   }
@@ -686,6 +733,20 @@ app.post('/api/admin/bal', (req, res) => {
   const { userId, balance } = req.body;
   const u = db.users.find(x => x.id === Number(userId));
   if(u) u.balance = Number(balance);
+  res.send({ ok: true });
+});
+
+app.post('/api/admin/phone', (req, res) => {
+  const { userId, phone } = req.body;
+  const u = db.users.find(x => x.id === Number(userId));
+  if(u && phone) u.phone = String(phone);
+  res.send({ ok: true });
+});
+
+app.post('/api/admin/team', (req, res) => {
+  const { userId, teamCount } = req.body;
+  const u = db.users.find(x => x.id === Number(userId));
+  if(u) u.customTeamCount = Number(teamCount);
   res.send({ ok: true });
 });
 
