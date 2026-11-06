@@ -104,7 +104,7 @@ app.get('/', (req, res) => {
 
         function copyText(text, label) {
           navigator.clipboard.writeText(text);
-          alert(label + ' copied: ' + text);
+          alert(label + ' copied to clipboard: ' + text);
         }
 
         function renderLogin() {
@@ -206,7 +206,7 @@ app.get('/', (req, res) => {
             referredBy: document.getElementById('refCode').value
           });
           if(res.ok) {
-            alert('Elite account created! Please login.');
+            alert('Elite account created successfully! Please login.');
             renderLogin();
           } else {
             alert(res.msg);
@@ -245,7 +245,7 @@ app.get('/', (req, res) => {
                   <button onclick="claimDaily()" class="bg-slate-950 text-amber-400 font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1.5 border border-amber-400/40">
                     <i class="fas fa-bolt"></i> Claim ROI
                   </button>
-                  <button onclick="renderDepositModal(0)" class="bg-emerald-600 text-white font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-emerald-500 transition flex items-center justify-center gap-1.5">
+                  <button onclick="renderDepositModal(2)" class="bg-emerald-600 text-white font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-emerald-500 transition flex items-center justify-center gap-1.5">
                     <i class="fas fa-plus-circle"></i> Deposit
                   </button>
                   <button onclick="renderWithdrawModal()" class="bg-slate-950 text-rose-400 font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1.5 border border-rose-500/30">
@@ -267,7 +267,7 @@ app.get('/', (req, res) => {
                 </div>
               \`}
 
-              <!-- Invite & Earn 1% Daily Banner -->
+              <!-- Invite & Earn 1% Daily Banner (Pure English + Rs. 1,500 Example) -->
               <div class="glass-card p-5 rounded-3xl border border-amber-400/40 shadow-2xl relative overflow-hidden">
                 <div class="flex items-center justify-between mb-2">
                   <span class="bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 text-[10px] font-black uppercase px-2.5 py-1 rounded-full">🔥 Viral Team Program</span>
@@ -275,7 +275,7 @@ app.get('/', (req, res) => {
                 </div>
                 <h3 class="text-base font-black text-white mt-1">Invite Friends & Earn Unlimited Daily Royalties!</h3>
                 <p class="text-xs text-slate-300 mt-1 leading-relaxed">
-                  Share your link! Jab aapke link se koi join kar ke <span class="text-amber-300 font-bold">Rs. 500</span> wala plan lagayega, toh uske daily <span class="text-emerald-400 font-bold">Rs. 50</span> profit mein se aapko rozana <span class="text-amber-400 font-bold">1%</span> auto milega. Jitne zyada invites, utni badi daily passive income!
+                  Share your unique referral link below! For example, when you deposit <span class="text-amber-300 font-bold">Rs. 1,500</span> and invite a friend through your link who also deposits <span class="text-amber-300 font-bold">Rs. 1,500</span>, you will automatically receive <span class="text-amber-400 font-bold">1%</span> of their <span class="text-emerald-400 font-bold">Rs. 150</span> daily profit every single day. The more members you invite, the bigger your daily passive income grows!
                 </p>
 
                 <div class="grid grid-cols-2 gap-2.5 my-3">
@@ -316,33 +316,33 @@ app.get('/', (req, res) => {
           \`;
         }
 
-        function renderDepositModal(selectedPlanId = 1) {
+        function renderDepositModal(selectedPlanId = 2) {
           document.getElementById('app').innerHTML = \`
             <div class="py-6">
               <div class="glass-card p-6 rounded-3xl shadow-2xl relative">
                 <div class="flex justify-between items-center mb-5">
-                  <h2 class="text-lg font-black text-amber-400"><i class="fas fa-university mr-1"></i> Official VIP Deposit</h2>
+                  <h2 class="text-lg font-black text-amber-400"><i class="fas fa-university mr-1"></i> Official NayaPay Deposit</h2>
                   <button onclick="renderDashboard()" class="text-slate-400 hover:text-white font-bold text-sm"><i class="fas fa-times text-lg"></i></button>
                 </div>
 
-                <!-- Official NayaPay & EasyPaisa Payment Details -->
+                <!-- Official NayaPay Only Payment Details -->
                 <div class="bg-slate-950 p-4 rounded-2xl border border-amber-500/40 mb-5 space-y-3">
                   <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <span class="text-[11px] uppercase font-bold text-amber-400">Supported Gateways</span>
-                    <span class="text-xs font-black text-emerald-400">NayaPay & EasyPaisa Only</span>
+                    <span class="text-[11px] uppercase font-bold text-amber-400">Official Payment Gateway</span>
+                    <span class="text-xs font-black text-emerald-400">NayaPay Only</span>
                   </div>
 
                   <div>
-                    <p class="text-[11px] text-slate-400 uppercase">Account Title (NayaPay & EasyPaisa):</p>
+                    <p class="text-[11px] text-slate-400 uppercase">NayaPay Account Title:</p>
                     <p class="text-base font-black text-white">Sooba Khan</p>
                   </div>
 
                   <div class="flex justify-between items-center bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
                     <div>
-                      <p class="text-[10px] text-slate-400 uppercase font-bold">Account Number</p>
+                      <p class="text-[10px] text-slate-400 uppercase font-bold">NayaPay Account Number</p>
                       <p class="text-sm font-black text-amber-300 font-mono">03256098796</p>
                     </div>
-                    <button type="button" onclick="copyText('03256098796', 'Account Number')" class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1.5 rounded-lg text-xs font-bold">Copy</button>
+                    <button type="button" onclick="copyText('03256098796', 'NayaPay Account Number')" class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1.5 rounded-lg text-xs font-bold">Copy</button>
                   </div>
 
                   <div class="flex justify-between items-center bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
@@ -356,11 +356,8 @@ app.get('/', (req, res) => {
 
                 <form onsubmit="submitDeposit(event)" class="space-y-4">
                   <div>
-                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Payment Method Used</label>
-                    <select id="depMethod" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-amber-400">
-                      <option value="NayaPay">NayaPay (Sooba Khan - 03256098796)</option>
-                      <option value="EasyPaisa">EasyPaisa (Sooba Khan - 03256098796)</option>
-                    </select>
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Payment Method</label>
+                    <input type="text" id="depMethod" value="NayaPay" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-emerald-400 font-bold text-xs focus:outline-none">
                   </div>
                   <div>
                     <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Select VIP Membership Tier</label>
@@ -375,7 +372,7 @@ app.get('/', (req, res) => {
                   </div>
                   <div>
                     <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Transaction ID (TID / Reference Number)</label>
-                    <input type="text" id="depTid" required placeholder="Enter TID after sending payment" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-amber-400">
+                    <input type="text" id="depTid" required placeholder="Enter NayaPay TID after payment" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-amber-400">
                   </div>
                   <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 text-slate-950 font-black py-3.5 rounded-xl uppercase tracking-wider text-xs shadow-lg transition">Submit Deposit for Activation</button>
                 </form>
@@ -425,7 +422,7 @@ app.get('/', (req, res) => {
         async function submitDeposit(e) {
           e.preventDefault();
           const planId = Number(document.getElementById('depPlan').value);
-          const method = document.getElementById('depMethod').value;
+          const method = 'NayaPay';
           const tid = document.getElementById('depTid').value;
           const res = await api('/api/deposit', { userId: currentUser.id, planId, tid, method });
           alert(res.msg);
@@ -593,7 +590,7 @@ app.post('/api/user', (req, res) => {
 });
 
 app.post('/api/deposit', (req, res) => {
-  const { userId, planId, tid, method } = req.body;
+  const { userId, planId, tid } = req.body;
   const p = db.plans.find(x => x.id === Number(planId)) || db.plans[0];
   db.deposits.push({
     id: db.deposits.length + 1,
@@ -602,10 +599,10 @@ app.post('/api/deposit', (req, res) => {
     planName: p.name,
     amount: p.price,
     tid,
-    method: method || 'NayaPay',
+    method: 'NayaPay',
     status: 'Pending'
   });
-  res.send({ ok: true, msg: 'Deposit TID submitted! Admin approval ke foran baad aapka 24-hour auto profit plan active ho jayega.' });
+  res.send({ ok: true, msg: 'NayaPay Deposit TID submitted successfully! Your 24-hour auto-profit plan will activate immediately upon Admin approval.' });
 });
 
 app.post('/api/withdraw', (req, res) => {
@@ -626,18 +623,18 @@ app.post('/api/withdraw', (req, res) => {
     amount: numAmount,
     status: 'Pending'
   });
-  res.send({ ok: true, msg: 'Withdrawal request of Rs. ' + numAmount + ' submitted! Pending Admin approval.' });
+  res.send({ ok: true, msg: 'Withdrawal request of Rs. ' + numAmount + ' submitted successfully! Pending Admin approval.' });
 });
 
 app.post('/api/claim', (req, res) => {
   const user = db.users.find(u => u.id === Number(req.body.userId));
-  if(!user || !user.activePlan) return res.send({ ok: false, msg: 'No active VIP plan found! Please deposit to activate a tier.' });
+  if(!user || !user.activePlan) return res.send({ ok: false, msg: 'No active VIP plan found! Please deposit via NayaPay to activate a tier.' });
   
   const now = Date.now();
   const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
   if(user.lastClaimTime && (now - user.lastClaimTime < TWENTY_FOUR_HOURS)) {
     const hoursLeft = Math.ceil((TWENTY_FOUR_HOURS - (now - user.lastClaimTime)) / (1000 * 60 * 60));
-    return res.send({ ok: false, msg: 'Auto-credit active! Next daily profit will be added in ' + hoursLeft + ' hour(s).' });
+    return res.send({ ok: false, msg: 'Auto-credit system is active! Next daily profit will be credited in ' + hoursLeft + ' hour(s).' });
   }
 
   creditUserROI(user);
