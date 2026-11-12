@@ -1,24 +1,106 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const app = express();
 app.use(express.json());
 
-// In-Memory Database
-const db = {
-  users: [],
-  plans: [
-    { id: 1, name: 'VIP 1 - Starter Elite', price: 500, daily: 50, days: 30 },
-    { id: 2, name: 'VIP 2 - Bronze Venture', price: 1500, daily: 150, days: 30 },
-    { id: 3, name: 'VIP 3 - Silver Capital', price: 3000, daily: 300, days: 30 },
-    { id: 4, name: 'VIP 4 - Gold Tycoon', price: 6000, daily: 600, days: 30 },
-    { id: 5, name: 'VIP 5 - Platinum Empire', price: 15000, daily: 1500, days: 30 },
-    { id: 6, name: 'VIP 6 - Diamond Syndicate', price: 50000, daily: 5000, days: 30 }
-  ],
+// Permanent Storage Setup (Works with Railway Volume or local folder)
+const DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
+if (!fs.existsSync(DATA_DIR)) {
+  try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) {}
+}
+const DB_FILE = path.join(DATA_DIR, 'database.json');
+
+const PLANS = [
+  { id: 1, name: 'VIP 1 - Starter Elite', price: 500, daily: 50, days: 30 },
+  { id: 2, name: 'VIP 2 - Bronze Venture', price: 1500, daily: 150, days: 30 },
+  { id: 3, name: 'VIP 3 - Silver Capital', price: 3000, daily: 300, days: 30 },
+  { id: 4, name: 'VIP 4 - Gold Tycoon', price: 6000, daily: 600, days: 30 },
+  { id: 5, name: 'VIP 5 - Platinum Empire', price: 15000, daily: 1500, days: 30 },
+  { id: 6, name: 'VIP 6 - Diamond Syndicate', price: 50000, daily: 5000, days: 30 }
+];
+
+const nowTime = Date.now();
+
+// Pre-loaded 22 Active Users (Zero Data Loss Guarantee)
+const INITIAL_USERS = [
+  { id: 370019, name: 'Malik', phone: '03074532161', pass: null, balance: 25001.5, activePlan: PLANS[5], lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 14, isAdmin: false },
+  { id: 752498, name: 'Hamza', phone: '03146317272', pass: null, balance: 7001, activePlan: PLANS[3], lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 4, isAdmin: false },
+  { id: 470999, name: 'Haneef', phone: '03105426316', pass: null, balance: 3000, activePlan: PLANS[2], lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 9, isAdmin: false },
+  { id: 138967, name: 'Arham', phone: '03466400034', pass: null, balance: 12000, activePlan: PLANS[3], lastClaimTime: nowTime, referredBy: 3, refEarnings: 0, customTeamCount: 9, isAdmin: false },
+  { id: 594811, name: 'Muhammad Shahwaiz Shaheer', phone: '03355333310', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 461445, name: 'Muhammad Ali', phone: '0318 0816215', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 785971, name: 'Abdulhadi', phone: '+923135861028', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 292161, name: 'Muzamil Khan', phone: '03126112337', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 221169, name: 'Zainab umer', phone: '0327 9189534', pass: null, balance: 1200, activePlan: PLANS[3], lastClaimTime: nowTime, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 260690, name: 'Jani gujjar', phone: '03204049533', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 190187, name: 'shahzaib niazi', phone: '03188117086', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 946320, name: 'Muhammad Arslan', phone: '03215706658', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 292161, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 362105, name: 'Hashir amin', phone: '03402828581', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 982227, name: 'Moiz Ul Eman', phone: '03708058726', pass: null, balance: 150, activePlan: PLANS[0], lastClaimTime: nowTime, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 399878, name: 'Luqman', phone: '03295825871', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 993595, name: 'Shahid zaman', phone: '03005498117', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 399878, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 949009, name: 'Daniyal', phone: '0318 5223061', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 982852, name: 'Kamran Maqsood', phone: '03484097886', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 377280, name: 'Shehzan', phone: '03182628010', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 203973, name: 'Haseeb Ahmed', phone: '03105941294', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 930607, name: 'Muhammad Abdullah', phone: '03104166661', pass: null, balance: 50, activePlan: PLANS[0], lastClaimTime: nowTime, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 479946, name: 'Muhammed Zafir khan', phone: '03001555644', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 930607, refEarnings: 0, customTeamCount: null, isAdmin: false }
+];
+
+let db = {
+  users: INITIAL_USERS,
+  plans: PLANS,
   deposits: [],
   withdrawals: []
 };
 
+// Load saved database if exists on disk
+if (fs.existsSync(DB_FILE)) {
+  try {
+    const saved = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    if (saved && Array.isArray(saved.users) && saved.users.length > 0) {
+      db.users = saved.users;
+      db.deposits = saved.deposits || [];
+      db.withdrawals = saved.withdrawals || [];
+      // Merge any missing initial users just in case
+      INITIAL_USERS.forEach(initUser => {
+        if (!db.users.find(u => u.id === initUser.id)) {
+          db.users.push(initUser);
+        }
+      });
+    }
+  } catch (e) {
+    console.error('Error loading DB file:', e);
+  }
+}
+
+function saveDB() {
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify({
+      users: db.users,
+      deposits: db.deposits,
+      withdrawals: db.withdrawals
+    }, null, 2));
+  } catch (e) {
+    console.error('Error saving DB file:', e);
+  }
+}
+
+// Ensure every active plan user has a valid timer running for auto-credit
+db.users.forEach(u => {
+  if (u.activePlan && !u.lastClaimTime) {
+    u.lastClaimTime = Date.now();
+  }
+});
+saveDB();
+
 const ADMIN_PHONE = '03256098796';
 const ADMIN_PASS = 'admin123';
+
+function normalizePhone(p) {
+  return String(p || '').replace(/\s+/g, '').trim();
+}
 
 // Helper function to calculate active (deposited) referrals + any admin manual adjustment
 function getUserTeamCount(user) {
@@ -30,35 +112,45 @@ function getUserTeamCount(user) {
   return depositedRefs;
 }
 
-// Helper function to credit 10% Daily ROI + 1% Referral Bonus
+// Helper function to credit 10% Daily ROI + 1% Referral Bonus for ALL Plans (VIP 1 to VIP 6)
 function creditUserROI(user) {
   if (!user || !user.activePlan) return false;
-  const dailyProfit = Number(user.activePlan.daily);
-  user.balance = Number((user.balance + dailyProfit).toFixed(2));
+  const planObj = db.plans.find(p => p.id === Number(user.activePlan.id)) || user.activePlan;
+  const dailyProfit = Number(planObj.daily || (planObj.price * 0.10));
+  user.balance = Number((Number(user.balance || 0) + dailyProfit).toFixed(2));
   user.lastClaimTime = Date.now();
 
   if (user.referredBy) {
     const referrer = db.users.find(u => u.id === Number(user.referredBy));
     if (referrer) {
       const refBonus = Number((dailyProfit * 0.01).toFixed(2));
-      referrer.balance = Number((referrer.balance + refBonus).toFixed(2));
-      referrer.refEarnings = Number(((referrer.refEarnings || 0) + refBonus).toFixed(2));
+      referrer.balance = Number((Number(referrer.balance || 0) + refBonus).toFixed(2));
+      referrer.refEarnings = Number(((Number(referrer.refEarnings) || 0) + refBonus).toFixed(2));
     }
   }
+  saveDB();
   return true;
 }
 
-// Background Auto-Credit Job (Checks every 60 seconds for 24-hour completion)
+// Background Auto-Credit Job (Automatically credits ALL plans every 24 hours, even if user doesn't login)
 setInterval(() => {
   const now = Date.now();
   const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+  let updated = false;
+
   db.users.forEach(user => {
-    if (user.activePlan && user.lastClaimTime) {
-      if (now - user.lastClaimTime >= TWENTY_FOUR_HOURS) {
+    if (user.activePlan) {
+      if (!user.lastClaimTime) {
+        user.lastClaimTime = now;
+        updated = true;
+      } else if (now - user.lastClaimTime >= TWENTY_FOUR_HOURS) {
         creditUserROI(user);
+        updated = true;
       }
     }
   });
+
+  if (updated) saveDB();
 }, 60 * 1000);
 
 app.get('/', (req, res) => {
@@ -270,11 +362,11 @@ app.get('/', (req, res) => {
                 <div class="glass-card p-5 rounded-2xl border-emerald-500/50 shadow-xl relative overflow-hidden">
                   <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-3 py-1 rounded-bl-xl">Active Membership</div>
                   <h3 class="font-black text-lg text-amber-300">\${currentUser.activePlan.name}</h3>
-                  <p class="text-xs text-emerald-400 mt-1 font-bold"><i class="fas fa-sync-alt fa-spin mr-1"></i> Daily 10% ROI: Rs. \${currentUser.activePlan.daily} Every 24 Hours</p>
+                  <p class="text-xs text-emerald-400 mt-1 font-bold"><i class="fas fa-sync-alt fa-spin mr-1"></i> Auto-Crediting 10% ROI: Rs. \${currentUser.activePlan.daily} Every 24 Hours</p>
                 </div>
               \` : \`
                 <div class="glass-card p-4 rounded-2xl border-amber-500/30 text-center">
-                  <p class="text-xs text-amber-300 font-bold"><i class="fas fa-info-circle mr-1"></i> Activate a VIP Membership below to collect 10% daily profits every 24 hours!</p>
+                  <p class="text-xs text-amber-300 font-bold"><i class="fas fa-info-circle mr-1"></i> Activate a VIP Membership below to receive automatic 10% daily profits every 24 hours!</p>
                 </div>
               \`}
 
@@ -507,20 +599,33 @@ app.get('/', (req, res) => {
                 <button onclick="logout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold">Logout</button>
               </div>
 
-              <!-- Pending Deposits -->
+              <!-- Pending Deposits (With Plan Override Dropdown) -->
               <div class="glass-card p-5 rounded-2xl shadow-xl">
                 <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-clock mr-1"></i> Pending Deposit Approvals</h3>
                 <div class="space-y-3">
                   \${res.deposits.length === 0 ? '<p class="text-xs text-slate-500 italic">No pending deposits.</p>' : ''}
                   \${res.deposits.map(d => \`
-                    <div class="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
-                      <div>
-                        <p class="font-bold text-white">User #\${d.userId} | <span class="text-amber-400">\${d.planName}</span></p>
-                        <p class="text-slate-300 mt-1">\${d.method} TID: <span class="font-mono text-yellow-300 font-bold">\${d.tid}</span> (Rs. \${d.amount})</p>
+                    <div class="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800 space-y-2.5 text-xs">
+                      <div class="flex justify-between items-start">
+                        <div>
+                          <p class="font-bold text-white">User #\${d.userId} | Requested: <span class="text-amber-400">\${d.planName} (Rs. \${d.amount})</span></p>
+                          <p class="text-slate-300 mt-1">\${d.method} TID: <span class="font-mono text-yellow-300 font-bold">\${d.tid}</span></p>
+                        </div>
                       </div>
-                      <div class="flex gap-2">
-                        <button onclick="approveDeposit(\${d.id}, 'Approved')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-3 py-1.5 rounded-lg font-black">Approve</button>
-                        <button onclick="approveDeposit(\${d.id}, 'Rejected')" class="bg-rose-500 hover:bg-rose-400 text-white px-3 py-1.5 rounded-lg font-black">Reject</button>
+                      <div class="pt-2 border-t border-slate-800/80 flex flex-col gap-2">
+                        <label class="text-[10px] uppercase text-slate-400 font-bold">Verify Actual Amount Sent & Select Plan to Activate:</label>
+                        <select id="overridePlan_\${d.id}" class="w-full bg-slate-900 border border-amber-500/40 rounded-lg px-2.5 py-2 text-white text-xs">
+                          <option value="1" \${d.planId == 1 ? 'selected' : ''}>VIP 1 - Rs. 500 (Daily Rs. 50)</option>
+                          <option value="2" \${d.planId == 2 ? 'selected' : ''}>VIP 2 - Rs. 1,500 (Daily Rs. 150)</option>
+                          <option value="3" \${d.planId == 3 ? 'selected' : ''}>VIP 3 - Rs. 3,000 (Daily Rs. 300)</option>
+                          <option value="4" \${d.planId == 4 ? 'selected' : ''}>VIP 4 - Rs. 6,000 (Daily Rs. 600)</option>
+                          <option value="5" \${d.planId == 5 ? 'selected' : ''}>VIP 5 - Rs. 15,000 (Daily Rs. 1,500)</option>
+                          <option value="6" \${d.planId == 6 ? 'selected' : ''}>VIP 6 - Rs. 50,000 (Daily Rs. 5,000)</option>
+                        </select>
+                        <div class="flex gap-2 pt-1">
+                          <button onclick="approveDeposit(\${d.id}, 'Approved')" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-2 rounded-lg font-black uppercase">Approve Selected Plan</button>
+                          <button onclick="approveDeposit(\${d.id}, 'Rejected')" class="bg-rose-500 hover:bg-rose-400 text-white px-4 py-2 rounded-lg font-black uppercase">Reject</button>
+                        </div>
                       </div>
                     </div>
                   \`).join('')}
@@ -549,7 +654,7 @@ app.get('/', (req, res) => {
 
               <!-- All Registered Users -->
               <div class="glass-card p-5 rounded-2xl shadow-xl">
-                <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-users mr-1"></i> Registered Elite Users</h3>
+                <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-users mr-1"></i> Registered Elite Users (\${res.users.length})</h3>
                 <div class="space-y-3">
                   \${res.users.length === 0 ? '<p class="text-xs text-slate-500 italic">No registered users yet.</p>' : ''}
                   \${res.users.map(u => \`
@@ -558,13 +663,14 @@ app.get('/', (req, res) => {
                         <div>
                           <p class="font-black text-white">#\${u.id} \${u.name} <span class="text-amber-300 font-mono">(\${u.phone})</span></p>
                           <p class="text-amber-400 font-bold mt-0.5">Balance: Rs. \${Number(u.balance).toLocaleString()} | Active Invites: <span class="text-emerald-400">\${u.teamCount}</span></p>
-                          <p class="text-[11px] text-slate-400 mt-0.5">Plan: \${u.activePlan ? u.activePlan.name : 'None'} | Ref By: \${u.referredBy || 'None'}</p>
+                          <p class="text-[11px] text-slate-400 mt-0.5">Plan: <span class="text-emerald-300 font-semibold">\${u.activePlan ? u.activePlan.name : 'None'}</span> | Ref By: \${u.referredBy || 'None'}</p>
                         </div>
                       </div>
-                      <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/80">
-                        <button onclick="editBalance(\${u.id}, \${u.balance})" class="bg-amber-400 hover:bg-amber-300 text-slate-950 py-1.5 rounded-lg font-black">Edit Bal</button>
-                        <button onclick="editPhone(\${u.id}, '\${u.phone}')" class="bg-sky-400 hover:bg-sky-300 text-slate-950 py-1.5 rounded-lg font-black">Edit Phone</button>
-                        <button onclick="editTeam(\${u.id}, \${u.teamCount})" class="bg-emerald-400 hover:bg-emerald-300 text-slate-950 py-1.5 rounded-lg font-black">Edit Team</button>
+                      <div class="grid grid-cols-4 gap-1.5 pt-1 border-t border-slate-800/80">
+                        <button onclick="editBalance(\${u.id}, \${u.balance})" class="bg-amber-400 hover:bg-amber-300 text-slate-950 py-1.5 rounded-lg font-black text-[11px]">Edit Bal</button>
+                        <button onclick="editPlan(\${u.id}, \${u.activePlan ? u.activePlan.id : 0})" class="bg-purple-400 hover:bg-purple-300 text-slate-950 py-1.5 rounded-lg font-black text-[11px]">Edit Plan</button>
+                        <button onclick="editPhone(\${u.id}, '\${u.phone}')" class="bg-sky-400 hover:bg-sky-300 text-slate-950 py-1.5 rounded-lg font-black text-[11px]">Edit Phone</button>
+                        <button onclick="editTeam(\${u.id}, \${u.teamCount})" class="bg-emerald-400 hover:bg-emerald-300 text-slate-950 py-1.5 rounded-lg font-black text-[11px]">Edit Team</button>
                       </div>
                     </div>
                   \`).join('')}
@@ -575,7 +681,9 @@ app.get('/', (req, res) => {
         }
 
         async function approveDeposit(id, status) {
-          await api('/api/admin/deposit', { id, status });
+          const selectEl = document.getElementById('overridePlan_' + id);
+          const approvedPlanId = selectEl ? Number(selectEl.value) : null;
+          await api('/api/admin/deposit', { id, status, approvedPlanId });
           renderAdmin();
         }
 
@@ -588,6 +696,13 @@ app.get('/', (req, res) => {
           const newBal = prompt('Enter new wallet balance (Rs.):', currentBal);
           if(newBal === null || newBal === '') return;
           await api('/api/admin/bal', { userId: Number(userId), balance: Number(newBal) });
+          renderAdmin();
+        }
+
+        async function editPlan(userId, currentPlanId) {
+          const newPlan = prompt('Enter Plan ID (1=500, 2=1500, 3=3000, 4=6000, 5=15000, 6=50000, or 0 for None):', currentPlanId);
+          if(newPlan === null || newPlan === '') return;
+          await api('/api/admin/plan', { userId: Number(userId), planId: Number(newPlan) });
           renderAdmin();
         }
 
@@ -620,11 +735,11 @@ app.get('/', (req, res) => {
 
 app.post('/api/register', (req, res) => {
   const { name, phone, pass, referredBy } = req.body;
-  if(db.users.find(u => u.phone === phone)) {
+  const cleanPhone = normalizePhone(phone);
+  if(db.users.find(u => normalizePhone(u.phone) === cleanPhone)) {
     return res.send({ ok: false, msg: 'Phone number already registered!' });
   }
   const refId = referredBy ? Number(referredBy) : null;
-  // Generate random 6-digit user ID (e.g., 765342)
   let randomId;
   do {
     randomId = Math.floor(100000 + Math.random() * 900000);
@@ -633,7 +748,7 @@ app.post('/api/register', (req, res) => {
   const user = {
     id: randomId,
     name,
-    phone,
+    phone: phone.trim(),
     pass,
     balance: 0,
     activePlan: null,
@@ -644,16 +759,27 @@ app.post('/api/register', (req, res) => {
     isAdmin: false
   };
   db.users.push(user);
+  saveDB();
   res.send({ ok: true });
 });
 
 app.post('/api/login', (req, res) => {
   const { phone, pass } = req.body;
-  if(phone === ADMIN_PHONE && pass === ADMIN_PASS) {
+  const cleanPhone = normalizePhone(phone);
+  if(cleanPhone === normalizePhone(ADMIN_PHONE) && pass === ADMIN_PASS) {
     return res.send({ ok: true, user: { id: 999, name: 'Syndicate Boss', phone: ADMIN_PHONE, isAdmin: true } });
   }
-  const user = db.users.find(u => u.phone === phone && u.pass === pass);
+  const user = db.users.find(u => normalizePhone(u.phone) === cleanPhone);
   if(!user) return res.send({ ok: false, msg: 'Invalid mobile number or password!' });
+
+  // Smart Auto-Learn Password for pre-loaded users so they never get locked out
+  if (!user.pass) {
+    user.pass = pass;
+    saveDB();
+  } else if (user.pass !== pass) {
+    return res.send({ ok: false, msg: 'Invalid mobile number or password!' });
+  }
+
   res.send({ ok: true, user });
 });
 
@@ -679,7 +805,8 @@ app.post('/api/deposit', (req, res) => {
     method: 'NayaPay',
     status: 'Pending'
   });
-  res.send({ ok: true, msg: 'NayaPay Deposit TID submitted successfully! Once approved by Admin, you can immediately collect your 10% daily ROI.' });
+  saveDB();
+  res.send({ ok: true, msg: 'NayaPay Deposit TID submitted successfully! Once approved by Admin, your 10% daily ROI will start automatically.' });
 });
 
 app.post('/api/withdraw', (req, res) => {
@@ -700,6 +827,7 @@ app.post('/api/withdraw', (req, res) => {
     amount: numAmount,
     status: 'Pending'
   });
+  saveDB();
   res.send({ ok: true, msg: 'Withdrawal request of Rs. ' + numAmount + ' submitted successfully! Pending Admin approval.' });
 });
 
@@ -711,7 +839,7 @@ app.post('/api/claim', (req, res) => {
   const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
   if(user.lastClaimTime && (now - user.lastClaimTime < TWENTY_FOUR_HOURS)) {
     const hoursLeft = Math.ceil((TWENTY_FOUR_HOURS - (now - user.lastClaimTime)) / (1000 * 60 * 60));
-    return res.send({ ok: false, msg: 'Daily 10% ROI already collected for today! Next collection available in ' + hoursLeft + ' hour(s).' });
+    return res.send({ ok: false, msg: 'Your 10% Daily ROI is auto-credited every 24 hours! Next automatic credit in ' + hoursLeft + ' hour(s).' });
   }
 
   creditUserROI(user);
@@ -731,17 +859,24 @@ app.post('/api/admin/data', (req, res) => {
 });
 
 app.post('/api/admin/deposit', (req, res) => {
-  const { id, status } = req.body;
+  const { id, status, approvedPlanId } = req.body;
   const d = db.deposits.find(x => x.id === Number(id));
   if(d && d.status === 'Pending') {
     d.status = status;
     if(status === 'Approved') {
       const u = db.users.find(x => x.id === d.userId);
-      const p = db.plans.find(x => x.id === d.planId);
+      // Use Admin's selected override plan if user sent less/different amount (e.g. selected 1500 but sent 500)
+      const finalPlanId = approvedPlanId ? Number(approvedPlanId) : d.planId;
+      const p = db.plans.find(x => x.id === finalPlanId);
       if(u && p) {
+        d.planId = p.id;
+        d.planName = p.name;
+        d.amount = p.price;
+
         const hadPlanBefore = u.activePlan !== null;
         u.activePlan = p;
-        u.lastClaimTime = null;
+        // Start 24-hour automatic ROI timer immediately upon approval!
+        u.lastClaimTime = Date.now();
 
         if (!hadPlanBefore && u.referredBy) {
           const referrer = db.users.find(r => r.id === Number(u.referredBy));
@@ -751,6 +886,7 @@ app.post('/api/admin/deposit', (req, res) => {
         }
       }
     }
+    saveDB();
   }
   res.send({ ok: true });
 });
@@ -766,6 +902,7 @@ app.post('/api/admin/withdraw', (req, res) => {
         u.balance = Number((u.balance - w.amount).toFixed(2));
       }
     }
+    saveDB();
   }
   res.send({ ok: true });
 });
@@ -773,21 +910,49 @@ app.post('/api/admin/withdraw', (req, res) => {
 app.post('/api/admin/bal', (req, res) => {
   const { userId, balance } = req.body;
   const u = db.users.find(x => x.id === Number(userId));
-  if(u) u.balance = Number(balance);
+  if(u) {
+    u.balance = Number(balance);
+    saveDB();
+  }
+  res.send({ ok: true });
+});
+
+app.post('/api/admin/plan', (req, res) => {
+  const { userId, planId } = req.body;
+  const u = db.users.find(x => x.id === Number(userId));
+  if(u) {
+    if (Number(planId) === 0) {
+      u.activePlan = null;
+      u.lastClaimTime = null;
+    } else {
+      const p = db.plans.find(x => x.id === Number(planId));
+      if (p) {
+        u.activePlan = p;
+        u.lastClaimTime = Date.now();
+      }
+    }
+    saveDB();
+  }
   res.send({ ok: true });
 });
 
 app.post('/api/admin/phone', (req, res) => {
   const { userId, phone } = req.body;
   const u = db.users.find(x => x.id === Number(userId));
-  if(u && phone) u.phone = String(phone);
+  if(u && phone) {
+    u.phone = String(phone);
+    saveDB();
+  }
   res.send({ ok: true });
 });
 
 app.post('/api/admin/team', (req, res) => {
   const { userId, teamCount } = req.body;
   const u = db.users.find(x => x.id === Number(userId));
-  if(u) u.customTeamCount = Number(teamCount);
+  if(u) {
+    u.customTeamCount = Number(teamCount);
+    saveDB();
+  }
   res.send({ ok: true });
 });
 
