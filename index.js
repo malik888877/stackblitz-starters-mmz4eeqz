@@ -2,9 +2,11 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const app = express();
-app.use(express.json());
 
-// Permanent Storage Setup (Works with Railway Volume or local folder)
+// Increased limit to 15MB so users can easily upload payment screenshots
+app.use(express.json({ limit: '15mb' }));
+
+// Permanent Storage Setup (Works with Railway Volume /app/data)
 const DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) {
   try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) {}
@@ -63,7 +65,6 @@ if (fs.existsSync(DB_FILE)) {
       db.users = saved.users;
       db.deposits = saved.deposits || [];
       db.withdrawals = saved.withdrawals || [];
-      // Merge any missing initial users just in case
       INITIAL_USERS.forEach(initUser => {
         if (!db.users.find(u => u.id === initUser.id)) {
           db.users.push(initUser);
@@ -87,7 +88,6 @@ function saveDB() {
   }
 }
 
-// Ensure every active plan user has a valid timer running for auto-credit
 db.users.forEach(u => {
   if (u.activePlan && !u.lastClaimTime) {
     u.lastClaimTime = Date.now();
@@ -102,7 +102,6 @@ function normalizePhone(p) {
   return String(p || '').replace(/\s+/g, '').trim();
 }
 
-// Helper function to calculate active (deposited) referrals + any admin manual adjustment
 function getUserTeamCount(user) {
   if (!user) return 0;
   const depositedRefs = db.users.filter(u => u.referredBy === user.id && u.activePlan !== null).length;
@@ -112,7 +111,7 @@ function getUserTeamCount(user) {
   return depositedRefs;
 }
 
-// Helper function to credit 10% Daily ROI + 1% Referral Bonus for ALL Plans (VIP 1 to VIP 6)
+// Credit 10% Daily ROI + 1% Referral Bonus for ALL Plans (VIP 1 to VIP 6)
 function creditUserROI(user) {
   if (!user || !user.activePlan) return false;
   const planObj = db.plans.find(p => p.id === Number(user.activePlan.id)) || user.activePlan;
@@ -132,7 +131,7 @@ function creditUserROI(user) {
   return true;
 }
 
-// Background Auto-Credit Job (Automatically credits ALL plans every 24 hours, even if user doesn't login)
+// Automatic 24-Hour ROI Credit Timer for ALL Plans
 setInterval(() => {
   const now = Date.now();
   const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
@@ -184,13 +183,20 @@ app.get('/', (req, res) => {
 
       <div id="app" class="max-w-md mx-auto w-full p-4 flex-grow z-10 pb-24"></div>
       
+      <!-- Fullscreen Screenshot Viewer Modal -->
+      <div id="imgModal" onclick="this.classList.add('hidden')" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-4 cursor-pointer">
+        <p class="text-xs text-amber-400 font-bold mb-2 uppercase tracking-wider">Tap anywhere to close</p>
+        <img id="imgModalSrc" src="" class="max-h-[85vh] max-w-full rounded-2xl border-2 border-amber-400 shadow-2xl object-contain" />
+      </div>
+
       <!-- Telegram Official Support Floating Button -->
-      <a href="https://t.me/VIPEARNPK_SUPPORT" target="_blank" class="fixed bottom-5 right-5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-2.5 text-xs font-black uppercase tracking-wider z-50 transition transform hover:scale-105 border border-sky-300/40">
+      <a href="https://t.me/VIPEARNPK_SUPPORT" target="_blank" class="fixed bottom-5 right-5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-2.5 text-xs font-black uppercase tracking-wider z-40 transition transform hover:scale-105 border border-sky-300/40">
         <i class="fab fa-telegram-plane text-xl"></i> VIP Telegram Care
       </a>
 
       <script>
         let currentUser = null;
+        let selectedScreenshotData = null;
         const urlParams = new URLSearchParams(window.location.search);
         const refFromUrl = urlParams.get('ref') || '';
 
@@ -206,6 +212,48 @@ app.get('/', (req, res) => {
         function copyText(text, label) {
           navigator.clipboard.writeText(text);
           alert(label + ' copied to clipboard: ' + text);
+        }
+
+        function viewFullImage(src) {
+          if (!src) return;
+          document.getElementById('imgModalSrc').src = src;
+          document.getElementById('imgModal').classList.remove('hidden');
+        }
+
+        // Compress screenshot client-side so upload is instant and storage stays light
+        function handleScreenshotSelect(event) {
+          const file = event.target.files[0];
+          if (!file) {
+            selectedScreenshotData = null;
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+              const canvas = document.createElement('canvas');
+              const MAX_WIDTH = 750;
+              let width = img.width;
+              let height = img.height;
+              if (width > MAX_WIDTH) {
+                height = Math.round((height * MAX_WIDTH) / width);
+                width = MAX_WIDTH;
+              }
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+              selectedScreenshotData = canvas.toDataURL('image/jpeg', 0.7);
+              const previewImg = document.getElementById('ssPreview');
+              const previewBox = document.getElementById('ssPreviewContainer');
+              if (previewImg && previewBox) {
+                previewImg.src = selectedScreenshotData;
+                previewBox.classList.remove('hidden');
+              }
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
         }
 
         function renderLogin() {
@@ -410,7 +458,7 @@ app.get('/', (req, res) => {
                       <div class="bg-slate-950/90 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-[11px]">
                         <div>
                           <p class="font-bold text-white">\${d.planName} (Rs. \${d.amount})</p>
-                          <p class="text-slate-400 font-mono">TID: \${d.tid}</p>
+                          <p class="text-emerald-400 text-[10px]"><i class="fas fa-image mr-1"></i>Payment Screenshot Uploaded</p>
                         </div>
                         <span class="px-2 py-0.5 rounded font-bold uppercase text-[10px] \${d.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : d.status === 'Rejected' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">\${d.status}</span>
                       </div>
@@ -455,6 +503,7 @@ app.get('/', (req, res) => {
         }
 
         function renderDepositModal(selectedPlanId = 2) {
+          selectedScreenshotData = null;
           document.getElementById('app').innerHTML = \`
             <div class="py-6">
               <div class="glass-card p-6 rounded-3xl shadow-2xl relative">
@@ -508,10 +557,21 @@ app.get('/', (req, res) => {
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Transaction ID (TID / Reference Number)</label>
-                    <input type="text" id="depTid" required placeholder="Enter NayaPay TID after payment" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-amber-400">
+                    <label class="block text-xs uppercase text-amber-400 font-bold mb-1.5"><i class="fas fa-camera mr-1"></i> Upload Payment Screenshot</label>
+                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-amber-500/50 rounded-2xl cursor-pointer bg-slate-950 hover:bg-slate-900/90 transition">
+                      <div class="flex flex-col items-center justify-center pt-5 pb-6 text-center px-3">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-amber-400 mb-2"></i>
+                        <p class="text-xs text-slate-200 font-bold">Tap here to select NayaPay Screenshot</p>
+                        <p class="text-[10px] text-slate-500 mt-1">Supports JPG, PNG, JPEG</p>
+                      </div>
+                      <input type="file" id="depScreenshot" accept="image/*" required onchange="handleScreenshotSelect(event)" class="hidden" />
+                    </label>
+                    <div id="ssPreviewContainer" class="hidden mt-3 text-center bg-slate-950 p-2.5 rounded-xl border border-emerald-500/40">
+                      <p class="text-[10px] text-emerald-400 font-bold uppercase mb-1.5"><i class="fas fa-check-circle mr-1"></i> Screenshot Attached Successfully</p>
+                      <img id="ssPreview" src="" class="max-h-44 mx-auto rounded-lg border border-slate-800 object-contain" />
+                    </div>
                   </div>
-                  <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 text-slate-950 font-black py-3.5 rounded-xl uppercase tracking-wider text-xs shadow-lg transition">Submit Deposit for Activation</button>
+                  <button type="submit" id="depSubmitBtn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 text-slate-950 font-black py-3.5 rounded-xl uppercase tracking-wider text-xs shadow-lg transition">Submit Screenshot for Activation</button>
                 </form>
               </div>
             </div>
@@ -558,10 +618,18 @@ app.get('/', (req, res) => {
 
         async function submitDeposit(e) {
           e.preventDefault();
+          if (!selectedScreenshotData) {
+            alert('Please select your payment screenshot first!');
+            return;
+          }
+          const btn = document.getElementById('depSubmitBtn');
+          if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Uploading Screenshot...';
+          }
           const planId = Number(document.getElementById('depPlan').value);
           const method = 'NayaPay';
-          const tid = document.getElementById('depTid').value;
-          const res = await api('/api/deposit', { userId: currentUser.id, planId, tid, method });
+          const res = await api('/api/deposit', { userId: currentUser.id, planId, screenshot: selectedScreenshotData, method });
           alert(res.msg);
           renderDashboard();
         }
@@ -599,7 +667,7 @@ app.get('/', (req, res) => {
                 <button onclick="logout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold">Logout</button>
               </div>
 
-              <!-- Pending Deposits (With Plan Override Dropdown) -->
+              <!-- Pending Deposits (With Screenshot View & Plan Override Dropdown) -->
               <div class="glass-card p-5 rounded-2xl shadow-xl">
                 <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-clock mr-1"></i> Pending Deposit Approvals</h3>
                 <div class="space-y-3">
@@ -609,11 +677,21 @@ app.get('/', (req, res) => {
                       <div class="flex justify-between items-start">
                         <div>
                           <p class="font-bold text-white">User #\${d.userId} | Requested: <span class="text-amber-400">\${d.planName} (Rs. \${d.amount})</span></p>
-                          <p class="text-slate-300 mt-1">\${d.method} TID: <span class="font-mono text-yellow-300 font-bold">\${d.tid}</span></p>
+                          <p class="text-slate-400 text-[11px] mt-0.5">Gateway: \${d.method}</p>
                         </div>
                       </div>
+
+                      \${d.screenshot ? \`
+                        <div class="bg-slate-900 p-2 rounded-xl border border-slate-800 text-center">
+                          <p class="text-[10px] text-amber-300 font-bold uppercase mb-1"><i class="fas fa-search-plus mr-1"></i> Payment Proof (Tap image to zoom)</p>
+                          <img src="\${d.screenshot}" onclick="viewFullImage(this.src)" class="max-h-48 mx-auto rounded-lg cursor-pointer border border-amber-500/30 hover:border-amber-400 transition object-contain" />
+                        </div>
+                      \` : \`
+                        <p class="text-slate-400 font-mono">TID: \${d.tid || 'N/A'}</p>
+                      \`}
+
                       <div class="pt-2 border-t border-slate-800/80 flex flex-col gap-2">
-                        <label class="text-[10px] uppercase text-slate-400 font-bold">Verify Actual Amount Sent & Select Plan to Activate:</label>
+                        <label class="text-[10px] uppercase text-slate-400 font-bold">Verify Screenshot Amount & Select Plan to Activate:</label>
                         <select id="overridePlan_\${d.id}" class="w-full bg-slate-900 border border-amber-500/40 rounded-lg px-2.5 py-2 text-white text-xs">
                           <option value="1" \${d.planId == 1 ? 'selected' : ''}>VIP 1 - Rs. 500 (Daily Rs. 50)</option>
                           <option value="2" \${d.planId == 2 ? 'selected' : ''}>VIP 2 - Rs. 1,500 (Daily Rs. 150)</option>
@@ -623,7 +701,7 @@ app.get('/', (req, res) => {
                           <option value="6" \${d.planId == 6 ? 'selected' : ''}>VIP 6 - Rs. 50,000 (Daily Rs. 5,000)</option>
                         </select>
                         <div class="flex gap-2 pt-1">
-                          <button onclick="approveDeposit(\${d.id}, 'Approved')" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-2 rounded-lg font-black uppercase">Approve Selected Plan</button>
+                          <button onclick="approveDeposit(\${d.id}, 'Approved')" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-2 rounded-lg font-black uppercase">Approve Plan</button>
                           <button onclick="approveDeposit(\${d.id}, 'Rejected')" class="bg-rose-500 hover:bg-rose-400 text-white px-4 py-2 rounded-lg font-black uppercase">Reject</button>
                         </div>
                       </div>
@@ -772,7 +850,6 @@ app.post('/api/login', (req, res) => {
   const user = db.users.find(u => normalizePhone(u.phone) === cleanPhone);
   if(!user) return res.send({ ok: false, msg: 'Invalid mobile number or password!' });
 
-  // Smart Auto-Learn Password for pre-loaded users so they never get locked out
   if (!user.pass) {
     user.pass = pass;
     saveDB();
@@ -787,13 +864,19 @@ app.post('/api/user', (req, res) => {
   const userId = Number(req.body.id);
   const user = db.users.find(u => u.id === userId);
   const teamCount = getUserTeamCount(user);
-  const deposits = db.deposits.filter(d => d.userId === userId);
+  // Send deposit history without heavy base64 image strings to keep user dashboard fast
+  const deposits = db.deposits
+    .filter(d => d.userId === userId)
+    .map(({ screenshot, ...rest }) => rest);
   const withdrawals = db.withdrawals.filter(w => w.userId === userId);
   res.send({ user, plans: db.plans, teamCount, deposits, withdrawals });
 });
 
 app.post('/api/deposit', (req, res) => {
-  const { userId, planId, tid } = req.body;
+  const { userId, planId, screenshot } = req.body;
+  if (!screenshot) {
+    return res.send({ ok: false, msg: 'Please upload a valid payment screenshot!' });
+  }
   const p = db.plans.find(x => x.id === Number(planId)) || db.plans[0];
   db.deposits.push({
     id: db.deposits.length + 1,
@@ -801,12 +884,12 @@ app.post('/api/deposit', (req, res) => {
     planId: p.id,
     planName: p.name,
     amount: p.price,
-    tid,
+    screenshot,
     method: 'NayaPay',
     status: 'Pending'
   });
   saveDB();
-  res.send({ ok: true, msg: 'NayaPay Deposit TID submitted successfully! Once approved by Admin, your 10% daily ROI will start automatically.' });
+  res.send({ ok: true, msg: 'Payment Screenshot uploaded successfully! Once verified by Admin, your 10% daily ROI will start automatically.' });
 });
 
 app.post('/api/withdraw', (req, res) => {
@@ -863,9 +946,11 @@ app.post('/api/admin/deposit', (req, res) => {
   const d = db.deposits.find(x => x.id === Number(id));
   if(d && d.status === 'Pending') {
     d.status = status;
+    // Free up screenshot memory after Admin approves/rejects so database stays fast
+    delete d.screenshot;
+
     if(status === 'Approved') {
       const u = db.users.find(x => x.id === d.userId);
-      // Use Admin's selected override plan if user sent less/different amount (e.g. selected 1500 but sent 500)
       const finalPlanId = approvedPlanId ? Number(approvedPlanId) : d.planId;
       const p = db.plans.find(x => x.id === finalPlanId);
       if(u && p) {
@@ -875,7 +960,6 @@ app.post('/api/admin/deposit', (req, res) => {
 
         const hadPlanBefore = u.activePlan !== null;
         u.activePlan = p;
-        // Start 24-hour automatic ROI timer immediately upon approval!
         u.lastClaimTime = Date.now();
 
         if (!hadPlanBefore && u.referredBy) {
