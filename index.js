@@ -6,7 +6,7 @@ const app = express();
 // Increased limit to 15MB so users can easily upload payment screenshots
 app.use(express.json({ limit: '15mb' }));
 
-// Permanent Storage Setup (Works with Railway Volume /app/data)
+// Permanent Storage Setup (Automatically uses Railway Volume path)
 const DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) {
   try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) {}
@@ -57,7 +57,7 @@ let db = {
   withdrawals: []
 };
 
-// Load saved database if exists on disk
+// Load saved database from Railway Volume so NO users or transaction history are ever lost
 if (fs.existsSync(DB_FILE)) {
   try {
     const saved = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
@@ -111,7 +111,7 @@ function getUserTeamCount(user) {
   return depositedRefs;
 }
 
-// Credit 10% Daily ROI + 1% Referral Bonus for ALL Plans (VIP 1 to VIP 6)
+// Credit 10% Daily ROI + 1% of Friend's TOTAL DEPOSIT as Daily Referral Bonus
 function creditUserROI(user) {
   if (!user || !user.activePlan) return false;
   const planObj = db.plans.find(p => p.id === Number(user.activePlan.id)) || user.activePlan;
@@ -122,7 +122,8 @@ function creditUserROI(user) {
   if (user.referredBy) {
     const referrer = db.users.find(u => u.id === Number(user.referredBy));
     if (referrer) {
-      const refBonus = Number((dailyProfit * 0.01).toFixed(2));
+      // 1% of the friend's TOTAL DEPOSIT (price) every 24 hours!
+      const refBonus = Number((Number(planObj.price) * 0.01).toFixed(2));
       referrer.balance = Number((Number(referrer.balance || 0) + refBonus).toFixed(2));
       referrer.refEarnings = Number(((Number(referrer.refEarnings) || 0) + refBonus).toFixed(2));
     }
@@ -220,7 +221,6 @@ app.get('/', (req, res) => {
           document.getElementById('imgModal').classList.remove('hidden');
         }
 
-        // Compress screenshot client-side so upload is instant and storage stays light
         function handleScreenshotSelect(event) {
           const file = event.target.files[0];
           if (!file) {
@@ -305,7 +305,7 @@ app.get('/', (req, res) => {
                     <i class="fas fa-user-plus"></i>
                   </div>
                   <h1 class="text-2xl font-black text-amber-400">Join Elite Circle</h1>
-                  <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest">10% Daily ROI & 1% Daily Team Commission</p>
+                  <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest">10% Daily ROI & 1% Daily Deposit Bonus</p>
                 </div>
                 <form onsubmit="handleRegister(event)" class="space-y-4">
                   <div>
@@ -422,11 +422,11 @@ app.get('/', (req, res) => {
               <div class="glass-card p-5 rounded-3xl border border-amber-400/40 shadow-2xl relative overflow-hidden">
                 <div class="flex items-center justify-between mb-2">
                   <span class="bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 text-[10px] font-black uppercase px-2.5 py-1 rounded-full">🔥 Viral Team Program</span>
-                  <span class="text-xs font-black text-emerald-400">Daily 1% Commission</span>
+                  <span class="text-xs font-black text-emerald-400">Daily 1% Deposit Bonus</span>
                 </div>
                 <h3 class="text-base font-black text-white mt-1">Invite Friends & Earn Unlimited Daily Royalties!</h3>
                 <p class="text-xs text-slate-300 mt-1 leading-relaxed">
-                  Share your unique referral link below! For example, when you deposit <span class="text-amber-300 font-bold">Rs. 1,500</span> and invite a friend through your link who also deposits <span class="text-amber-300 font-bold">Rs. 1,500</span>, your Active Team Invites count increases and you automatically receive <span class="text-amber-400 font-bold">1%</span> of their <span class="text-emerald-400 font-bold">Rs. 150</span> daily profit every single day.
+                  Share your unique referral link below! You automatically receive <span class="text-amber-400 font-bold">1% of your friend's total deposit</span> every single day! For example, if your friend activates <span class="text-amber-300 font-bold">Rs. 3,000</span>, you earn <span class="text-emerald-400 font-bold">Rs. 30 Daily</span>; on <span class="text-amber-300 font-bold">Rs. 15,000</span>, you earn <span class="text-emerald-400 font-bold">Rs. 150 Daily</span> automatically!
                 </p>
 
                 <div class="grid grid-cols-2 gap-2.5 my-3">
@@ -864,7 +864,6 @@ app.post('/api/user', (req, res) => {
   const userId = Number(req.body.id);
   const user = db.users.find(u => u.id === userId);
   const teamCount = getUserTeamCount(user);
-  // Send deposit history without heavy base64 image strings to keep user dashboard fast
   const deposits = db.deposits
     .filter(d => d.userId === userId)
     .map(({ screenshot, ...rest }) => rest);
@@ -946,7 +945,6 @@ app.post('/api/admin/deposit', (req, res) => {
   const d = db.deposits.find(x => x.id === Number(id));
   if(d && d.status === 'Pending') {
     d.status = status;
-    // Free up screenshot memory after Admin approves/rejects so database stays fast
     delete d.screenshot;
 
     if(status === 'Approved') {
