@@ -6,7 +6,7 @@ const app = express();
 // Increased limit to 15MB so users can easily upload payment screenshots
 app.use(express.json({ limit: '15mb' }));
 
-// Permanent Storage Setup (Automatically uses Railway Volume path)
+// Permanent Storage Setup (Automatically uses Railway Volume /app/data)
 const DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) {
   try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) {}
@@ -160,27 +160,77 @@ app.get('/', (req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>VIP Earn PK - Millionaire Investment Hub</title>
+      <title>VIP Earn PK - Futuristic Crypto & Wealth Hub</title>
       <script src="https://cdn.tailwindcss.com"></script>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
       <style>
-        @keyframes glow {
-          0%, 100% { opacity: 0.35; transform: scale(1); }
-          50% { opacity: 0.75; transform: scale(1.08); }
+        body {
+          background-color: #030712;
+          overflow-x: hidden;
         }
-        .animate-glow { animation: glow 5s ease-in-out infinite; }
+        /* Moving Futuristic Cyber Grid */
+        .cyber-grid {
+          position: fixed;
+          inset: 0;
+          background-image: 
+            linear-gradient(to right, rgba(234, 179, 8, 0.07) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(236, 72, 153, 0.05) 1px, transparent 1px);
+          background-size: 38px 38px;
+          transform: perspective(600px) rotateX(45deg) scale(1.8);
+          transform-origin: center top;
+          animation: gridMove 15s linear infinite;
+          pointer-events: none;
+          z-index: 0;
+        }
+        @keyframes gridMove {
+          0% { background-position: 0 0; }
+          100% { background-position: 0 380px; }
+        }
+        /* Neon Glassmorphism Card */
         .glass-card {
-          background: rgba(15, 23, 42, 0.88);
-          backdrop-filter: blur(16px);
-          border: 1px solid rgba(234, 179, 8, 0.28);
+          background: rgba(10, 15, 30, 0.78);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          border: 1px solid rgba(250, 204, 21, 0.32);
+          box-shadow: 0 0 25px rgba(234, 179, 8, 0.08), inset 0 0 15px rgba(250, 204, 21, 0.04);
         }
+        /* Live Ticker Animation */
+        @keyframes ticker {
+          0% { transform: translateX(100%); }
+          100% { transform: translateX(-100%); }
+        }
+        .animate-ticker {
+          display: inline-block;
+          white-space: nowrap;
+          animation: ticker 22s linear infinite;
+        }
+        @keyframes pulseGlow {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.65; transform: scale(1.12); }
+        }
+        .animate-glow { animation: pulseGlow 6s ease-in-out infinite; }
       </style>
     </head>
-    <body class="bg-black text-slate-100 font-sans min-h-screen flex flex-col justify-between relative overflow-x-hidden">
+    <body class="text-slate-100 font-sans min-h-screen flex flex-col justify-between relative">
       
-      <!-- Luxury Background Glows -->
-      <div class="fixed top-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none animate-glow"></div>
-      <div class="fixed bottom-10 right-1/4 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none animate-glow"></div>
+      <!-- Live 3D Crypto & Bitcoin Floating Canvas -->
+      <canvas id="cryptoCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+      <div class="cyber-grid"></div>
+
+      <!-- Ambient Futuristic Neon Orbs -->
+      <div class="fixed top-10 left-1/4 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none animate-glow z-0"></div>
+      <div class="fixed bottom-10 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl pointer-events-none animate-glow z-0"></div>
+
+      <!-- Top Live Crypto & Payout Ticker -->
+      <div class="w-full bg-slate-950/90 border-b border-amber-500/30 py-1.5 overflow-hidden z-20 sticky top-0 backdrop-blur-md">
+        <div class="animate-ticker text-[11px] font-bold tracking-wider text-amber-300">
+          <span class="mx-4"><i class="fab fa-bitcoin text-amber-400 mr-1"></i> BTC/USDT AI-Node: <span class="text-emerald-400">+10.0% Daily Yield Active</span></span>
+          <span class="mx-4">⚡ VIP #370019 received <span class="text-emerald-400">Rs. 5,000</span> Auto-ROI</span>
+          <span class="mx-4">💸 VIP #752498 withdrew <span class="text-emerald-400">Rs. 3,500</span> via EasyPaisa</span>
+          <span class="mx-4">🔥 VIP #138967 earned <span class="text-amber-400">1% Team Royalty Bonus</span></span>
+          <span class="mx-4">💎 Instant NayaPay & EasyPaisa Automated Payouts Live 24/7</span>
+        </div>
+      </div>
 
       <div id="app" class="max-w-md mx-auto w-full p-4 flex-grow z-10 pb-24"></div>
       
@@ -191,11 +241,87 @@ app.get('/', (req, res) => {
       </div>
 
       <!-- Telegram Official Support Floating Button -->
-      <a href="https://t.me/VIPEARNPK_SUPPORT" target="_blank" class="fixed bottom-5 right-5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-2.5 text-xs font-black uppercase tracking-wider z-40 transition transform hover:scale-105 border border-sky-300/40">
+      <a href="https://t.me/VIPEARNPK_SUPPORT" target="_blank" class="fixed bottom-5 right-5 bg-gradient-to-r from-amber-500 via-yellow-500 to-pink-600 hover:brightness-110 text-slate-950 px-5 py-3.5 rounded-full shadow-[0_0_25px_rgba(245,158,11,0.5)] flex items-center gap-2.5 text-xs font-black uppercase tracking-wider z-40 transition transform hover:scale-105 border border-amber-200/60">
         <i class="fab fa-telegram-plane text-xl"></i> VIP Telegram Care
       </a>
 
       <script>
+        // --- LIVE FUTURISTIC BITCOIN & CRYPTO PARTICLE ANIMATION ---
+        const canvas = document.getElementById('cryptoCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const symbols = ['₿', '₮', 'Ξ', '◈', '₨', '★'];
+        const colors = ['#facc15', '#f59e0b', '#10b981', '#ec4899', '#38bdf8'];
+
+        function resizeCanvas() {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        for (let i = 0; i < 28; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.65,
+            vy: -Math.random() * 0.85 - 0.25,
+            size: Math.floor(Math.random() * 14) + 12,
+            symbol: symbols[Math.floor(Math.random() * symbols.length)],
+            color: colors[Math.floor(Math.random() * colors.length)],
+            alpha: Math.random() * 0.55 + 0.2,
+            angle: Math.random() * Math.PI * 2,
+            spin: (Math.random() - 0.5) * 0.02
+          });
+        }
+
+        function animateCryptoBg() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Draw futuristic neural network lines between nearby crypto nodes
+          for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+              const dx = particles[i].x - particles[j].x;
+              const dy = particles[i].y - particles[j].y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist < 135) {
+                ctx.beginPath();
+                ctx.strokeStyle = \`rgba(250, 204, 21, \${(1 - dist / 135) * 0.16})\`;
+                ctx.lineWidth = 0.8;
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+
+          // Draw floating glowing crypto symbols
+          particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.angle += p.spin;
+
+            if (p.y < -30) p.y = canvas.height + 30;
+            if (p.x < -30) p.x = canvas.width + 30;
+            if (p.x > canvas.width + 30) p.x = -30;
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.angle);
+            ctx.font = \`bold \${p.size}px monospace\`;
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.alpha;
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 12;
+            ctx.fillText(p.symbol, -p.size / 2, p.size / 2);
+            ctx.restore();
+          });
+
+          requestAnimationFrame(animateCryptoBg);
+        }
+        animateCryptoBg();
+
+        // --- MAIN APP LOGIC ---
         let currentUser = null;
         let selectedScreenshotData = null;
         const urlParams = new URLSearchParams(window.location.search);
@@ -258,33 +384,33 @@ app.get('/', (req, res) => {
 
         function renderLogin() {
           document.getElementById('app').innerHTML = \`
-            <div class="flex items-center justify-center min-h-[85vh]">
+            <div class="flex items-center justify-center min-h-[82vh]">
               <div class="glass-card p-8 rounded-3xl shadow-2xl w-full relative overflow-hidden">
                 <div class="text-center mb-8">
-                  <div class="inline-flex p-4 bg-gradient-to-tr from-amber-500/20 to-yellow-300/30 text-amber-400 rounded-2xl text-4xl mb-4 border border-amber-500/30">
-                    <i class="fas fa-crown"></i>
+                  <div class="inline-flex p-4 bg-gradient-to-tr from-amber-500/25 via-yellow-400/20 to-pink-500/25 text-amber-400 rounded-2xl text-4xl mb-4 border border-amber-400/40 shadow-[0_0_25px_rgba(250,204,21,0.3)]">
+                    <i class="fab fa-bitcoin animate-pulse"></i>
                   </div>
-                  <h1 class="text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-200">VIP EARN PK</h1>
-                  <p class="text-xs text-amber-400/80 mt-1 uppercase tracking-widest font-semibold">Millionaire Wealth Syndicate</p>
+                  <h1 class="text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-pink-400">VIP EARN PK</h1>
+                  <p class="text-[11px] text-amber-400/90 mt-1 uppercase tracking-widest font-bold">AI-Crypto & Millionaire Wealth Hub</p>
                 </div>
                 
                 <form onsubmit="handleLogin(event)" class="space-y-5">
                   <div>
-                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1.5">Mobile Number</label>
+                    <label class="block text-xs uppercase text-slate-300 font-bold mb-1.5">Mobile Number</label>
                     <div class="relative">
-                      <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-amber-500/70"><i class="fas fa-mobile-alt"></i></span>
-                      <input type="text" id="phone" required placeholder="03001234567" class="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-white focus:outline-none focus:border-amber-400">
+                      <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-amber-400"><i class="fas fa-mobile-alt"></i></span>
+                      <input type="text" id="phone" required placeholder="03001234567" class="w-full bg-slate-950/90 border border-amber-500/30 rounded-xl px-4 py-3.5 pl-11 text-white focus:outline-none focus:border-amber-400">
                     </div>
                   </div>
                   <div>
-                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1.5">Security Password</label>
+                    <label class="block text-xs uppercase text-slate-300 font-bold mb-1.5">Security Password</label>
                     <div class="relative">
-                      <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-amber-500/70"><i class="fas fa-lock"></i></span>
-                      <input type="password" id="pass" required placeholder="••••••••" class="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-white focus:outline-none focus:border-amber-400">
+                      <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-amber-400"><i class="fas fa-lock"></i></span>
+                      <input type="password" id="pass" required placeholder="••••••••" class="w-full bg-slate-950/90 border border-amber-500/30 rounded-xl px-4 py-3.5 pl-11 text-white focus:outline-none focus:border-amber-400">
                     </div>
                   </div>
-                  <button type="submit" class="w-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black py-4 rounded-xl shadow-lg hover:brightness-110 transition uppercase text-sm">
-                    Access VIP Vault <i class="fas fa-arrow-right ml-1"></i>
+                  <button type="submit" class="w-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black py-4 rounded-xl shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:brightness-110 transition uppercase text-sm">
+                    Access VIP Vault <i class="fas fa-bolt ml-1"></i>
                   </button>
                 </form>
                 
@@ -298,36 +424,36 @@ app.get('/', (req, res) => {
 
         function renderRegister() {
           document.getElementById('app').innerHTML = \`
-            <div class="flex items-center justify-center min-h-[85vh]">
+            <div class="flex items-center justify-center min-h-[82vh]">
               <div class="glass-card p-8 rounded-3xl shadow-2xl w-full">
                 <div class="text-center mb-6">
-                  <div class="inline-flex p-3 bg-amber-500/20 text-amber-400 rounded-2xl text-3xl mb-2 border border-amber-500/30">
-                    <i class="fas fa-user-plus"></i>
+                  <div class="inline-flex p-3 bg-amber-500/20 text-amber-400 rounded-2xl text-3xl mb-2 border border-amber-500/40 shadow-[0_0_20px_rgba(250,204,21,0.25)]">
+                    <i class="fas fa-user-astronaut"></i>
                   </div>
-                  <h1 class="text-2xl font-black text-amber-400">Join Elite Circle</h1>
-                  <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest">10% Daily ROI & 1% Daily Deposit Bonus</p>
+                  <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400">Join Elite Crypto Syndicate</h1>
+                  <p class="text-xs text-slate-300 mt-1 uppercase tracking-widest">10% Daily ROI & 1% Daily Deposit Bonus</p>
                 </div>
                 <form onsubmit="handleRegister(event)" class="space-y-4">
                   <div>
-                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Full Name</label>
+                    <label class="block text-xs uppercase text-slate-300 font-bold mb-1">Full Name</label>
                     <input type="text" id="name" required placeholder="Muhammad Ali" class="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-400">
                   </div>
                   <div>
-                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Mobile Number</label>
+                    <label class="block text-xs uppercase text-slate-300 font-bold mb-1">Mobile Number</label>
                     <input type="text" id="phone" required placeholder="03001234567" class="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-400">
                   </div>
                   <div>
-                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Password</label>
+                    <label class="block text-xs uppercase text-slate-300 font-bold mb-1">Password</label>
                     <input type="password" id="pass" required placeholder="••••••••" class="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-400">
                   </div>
                   <div>
-                    <label class="block text-xs uppercase text-amber-400/80 font-bold mb-1">Invite Code (Optional)</label>
-                    <input type="text" id="refCode" value="\${refFromUrl}" placeholder="Referral ID" class="w-full bg-slate-950/90 border border-amber-500/30 rounded-xl px-4 py-3 text-amber-300 focus:outline-none focus:border-amber-400">
+                    <label class="block text-xs uppercase text-amber-400 font-bold mb-1">Invite Code (Optional)</label>
+                    <input type="text" id="refCode" value="\${refFromUrl}" placeholder="Referral ID" class="w-full bg-slate-950/90 border border-amber-500/40 rounded-xl px-4 py-3 text-amber-300 focus:outline-none focus:border-amber-400">
                   </div>
-                  <button type="submit" class="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black py-3.5 rounded-xl hover:brightness-110 transition uppercase shadow-lg">Register Account</button>
+                  <button type="submit" class="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black py-3.5 rounded-xl hover:brightness-110 transition uppercase shadow-[0_0_20px_rgba(250,204,21,0.4)]">Register VIP Account</button>
                 </form>
                 <div class="text-center mt-5">
-                  <button onclick="renderLogin()" class="text-slate-400 text-sm hover:text-amber-400">Already a member? <span class="text-amber-400 underline font-semibold">Login</span></button>
+                  <button onclick="renderLogin()" class="text-slate-300 text-sm hover:text-amber-400">Already a member? <span class="text-amber-400 underline font-semibold">Login</span></button>
                 </div>
               </div>
             </div>
@@ -371,35 +497,40 @@ app.get('/', (req, res) => {
           const inviteLink = window.location.origin + '/?ref=' + currentUser.id;
 
           document.getElementById('app').innerHTML = \`
-            <div class="py-4 space-y-5">
+            <div class="py-3 space-y-5">
               <!-- Top Profile Bar -->
-              <div class="flex justify-between items-center glass-card p-4 rounded-2xl shadow-xl">
-                <div>
-                  <span class="text-[10px] uppercase tracking-widest bg-amber-500/20 text-amber-400 px-2.5 py-0.5 rounded font-black border border-amber-500/30">VIP ID #\${currentUser.id}</span>
-                  <h2 class="text-lg font-black text-white mt-1">\${currentUser.name}</h2>
-                  <p class="text-xs text-slate-400">\${currentUser.phone}</p>
+              <div class="flex justify-between items-center glass-card p-4 rounded-2xl">
+                <div class="flex items-center gap-3">
+                  <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg">
+                    <i class="fab fa-bitcoin"></i>
+                  </div>
+                  <div>
+                    <span class="text-[10px] uppercase tracking-widest bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-black border border-amber-500/30">VIP NODE #\${currentUser.id}</span>
+                    <h2 class="text-base font-black text-white mt-0.5">\${currentUser.name}</h2>
+                    <p class="text-[11px] text-slate-400">\${currentUser.phone}</p>
+                  </div>
                 </div>
-                <button onclick="logout()" class="bg-red-500/10 text-red-400 border border-red-500/30 px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-red-500 hover:text-white transition">Logout</button>
+                <button onclick="logout()" class="bg-rose-500/15 text-rose-400 border border-rose-500/30 px-3 py-2 rounded-xl text-xs font-bold hover:bg-rose-500 hover:text-white transition">Logout</button>
               </div>
 
-              <!-- Main Portfolio Card -->
-              <div class="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-600 p-6 rounded-3xl shadow-2xl text-slate-950 relative overflow-hidden">
-                <div class="absolute -right-6 -bottom-6 text-slate-950/10 text-9xl font-black pointer-events-none"><i class="fas fa-coins"></i></div>
-                <div class="flex justify-between items-start">
+              <!-- Futuristic Main Portfolio Card -->
+              <div class="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-600 p-6 rounded-3xl shadow-[0_0_35px_rgba(245,158,11,0.35)] text-slate-950 relative overflow-hidden border border-yellow-200/50">
+                <div class="absolute -right-6 -bottom-6 text-slate-950/15 text-9xl font-black pointer-events-none"><i class="fab fa-bitcoin fa-spin" style="animation-duration: 25s;"></i></div>
+                <div class="flex justify-between items-start relative z-10">
                   <div>
-                    <p class="text-xs uppercase font-black tracking-widest opacity-80">Total Wealth Balance</p>
+                    <p class="text-xs uppercase font-black tracking-widest opacity-80 flex items-center gap-1"><i class="fas fa-shield-alt"></i> Total Vault Balance</p>
                     <h1 class="text-4xl font-black mt-1">Rs. \${Number(currentUser.balance).toLocaleString()}</h1>
                   </div>
-                  <span class="bg-slate-950 text-amber-400 text-[10px] font-black px-2.5 py-1 rounded-full uppercase">10% Daily ROI</span>
+                  <span class="bg-slate-950 text-amber-400 text-[10px] font-black px-3 py-1 rounded-full uppercase shadow-md border border-amber-400/40">⚡ 10% Daily AI-ROI</span>
                 </div>
-                <div class="mt-5 grid grid-cols-3 gap-2.5">
+                <div class="mt-5 grid grid-cols-3 gap-2.5 relative z-10">
                   <button onclick="claimDaily()" class="bg-slate-950 text-amber-400 font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1.5 border border-amber-400/40">
-                    <i class="fas fa-bolt"></i> Collect ROI
+                    <i class="fas fa-bolt text-yellow-400"></i> Collect ROI
                   </button>
-                  <button onclick="renderDepositModal(2)" class="bg-emerald-600 text-white font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-emerald-500 transition flex items-center justify-center gap-1.5">
+                  <button onclick="renderDepositModal(2)" class="bg-emerald-600 text-white font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-emerald-500 transition flex items-center justify-center gap-1.5 border border-emerald-300/40">
                     <i class="fas fa-plus-circle"></i> Deposit
                   </button>
-                  <button onclick="renderWithdrawModal()" class="bg-slate-950 text-rose-400 font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1.5 border border-rose-500/30">
+                  <button onclick="renderWithdrawModal()" class="bg-slate-950 text-rose-400 font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1.5 border border-rose-500/40">
                     <i class="fas fa-money-bill-wave"></i> Withdraw
                   </button>
                 </div>
@@ -407,21 +538,21 @@ app.get('/', (req, res) => {
 
               <!-- Active Membership Status -->
               \${currentUser.activePlan ? \`
-                <div class="glass-card p-5 rounded-2xl border-emerald-500/50 shadow-xl relative overflow-hidden">
-                  <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-3 py-1 rounded-bl-xl">Active Membership</div>
+                <div class="glass-card p-5 rounded-2xl border-emerald-500/50 relative overflow-hidden">
+                  <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-3 py-1 rounded-bl-xl">⚡ Node Active</div>
                   <h3 class="font-black text-lg text-amber-300">\${currentUser.activePlan.name}</h3>
                   <p class="text-xs text-emerald-400 mt-1 font-bold"><i class="fas fa-sync-alt fa-spin mr-1"></i> Auto-Crediting 10% ROI: Rs. \${currentUser.activePlan.daily} Every 24 Hours</p>
                 </div>
               \` : \`
                 <div class="glass-card p-4 rounded-2xl border-amber-500/30 text-center">
-                  <p class="text-xs text-amber-300 font-bold"><i class="fas fa-info-circle mr-1"></i> Activate a VIP Membership below to receive automatic 10% daily profits every 24 hours!</p>
+                  <p class="text-xs text-amber-300 font-bold"><i class="fas fa-rocket mr-1"></i> Activate a VIP Crypto Tier below to receive automatic 10% daily profits every 24 hours!</p>
                 </div>
               \`}
 
               <!-- Invite & Earn 1% Daily Banner -->
-              <div class="glass-card p-5 rounded-3xl border border-amber-400/40 shadow-2xl relative overflow-hidden">
+              <div class="glass-card p-5 rounded-3xl border border-amber-400/40 relative overflow-hidden">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 text-[10px] font-black uppercase px-2.5 py-1 rounded-full">🔥 Viral Team Program</span>
+                  <span class="bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 text-[10px] font-black uppercase px-2.5 py-1 rounded-full">🔥 Viral Team Syndicate</span>
                   <span class="text-xs font-black text-emerald-400">Daily 1% Deposit Bonus</span>
                 </div>
                 <h3 class="text-base font-black text-white mt-1">Invite Friends & Earn Unlimited Daily Royalties!</h3>
@@ -430,19 +561,19 @@ app.get('/', (req, res) => {
                 </p>
 
                 <div class="grid grid-cols-2 gap-2.5 my-3">
-                  <div class="bg-slate-950/90 p-3 rounded-xl border border-slate-800 text-center">
+                  <div class="bg-slate-950/90 p-3 rounded-xl border border-amber-500/20 text-center">
                     <p class="text-[10px] uppercase text-slate-400 font-bold">Active Team Invites</p>
                     <p class="text-lg font-black text-amber-400 mt-0.5">\${res.teamCount || 0} \${(res.teamCount === 1) ? 'Invite' : 'Invites'}</p>
                   </div>
-                  <div class="bg-slate-950/90 p-3 rounded-xl border border-slate-800 text-center">
+                  <div class="bg-slate-950/90 p-3 rounded-xl border border-emerald-500/20 text-center">
                     <p class="text-[10px] uppercase text-slate-400 font-bold">1% Referral Bonus</p>
                     <p class="text-lg font-black text-emerald-400 mt-0.5">Rs. \${Number(currentUser.refEarnings || 0).toLocaleString()}</p>
                   </div>
                 </div>
 
-                <div class="flex items-center gap-2 bg-slate-950 p-2 rounded-xl border border-amber-500/30">
+                <div class="flex items-center gap-2 bg-slate-950 p-2 rounded-xl border border-amber-500/40">
                   <input type="text" readonly value="\${inviteLink}" class="bg-transparent text-[11px] text-amber-200 w-full px-2 focus:outline-none font-mono">
-                  <button onclick="copyText('\${inviteLink}', 'Referral Link')" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-3.5 py-2 rounded-lg text-xs uppercase shrink-0 transition">
+                  <button onclick="copyText('\${inviteLink}', 'Referral Link')" class="bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 font-black px-3.5 py-2 rounded-lg text-xs uppercase shrink-0 transition">
                     <i class="fas fa-copy mr-1"></i> Copy Link
                   </button>
                 </div>
@@ -450,7 +581,7 @@ app.get('/', (req, res) => {
 
               <!-- Deposit & Withdrawal History Sections -->
               <div class="space-y-4">
-                <div class="glass-card p-4 rounded-2xl shadow-xl">
+                <div class="glass-card p-4 rounded-2xl">
                   <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider mb-3"><i class="fas fa-history mr-1"></i> Deposit History</h3>
                   <div class="space-y-2 max-h-40 overflow-y-auto">
                     \${userDeposits.length === 0 ? '<p class="text-[11px] text-slate-500 italic">No deposit records found.</p>' : ''}
@@ -466,7 +597,7 @@ app.get('/', (req, res) => {
                   </div>
                 </div>
 
-                <div class="glass-card p-4 rounded-2xl shadow-xl">
+                <div class="glass-card p-4 rounded-2xl">
                   <h3 class="text-xs font-black text-rose-400 uppercase tracking-wider mb-3"><i class="fas fa-wallet mr-1"></i> Withdrawal History</h3>
                   <div class="space-y-2 max-h-40 overflow-y-auto">
                     \${userWithdrawals.length === 0 ? '<p class="text-[11px] text-slate-500 italic">No withdrawal records found.</p>' : ''}
@@ -485,15 +616,15 @@ app.get('/', (req, res) => {
 
               <!-- Investment Tiers -->
               <div>
-                <h3 class="text-sm font-black mb-3 text-amber-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-gem"></i> VIP Investment Tiers (10% Daily Return)</h3>
+                <h3 class="text-sm font-black mb-3 text-amber-400 uppercase tracking-wider flex items-center gap-2"><i class="fab fa-bitcoin text-lg"></i> VIP Crypto Mining Tiers (10% Daily Return)</h3>
                 <div class="grid grid-cols-1 gap-3">
                   \${plans.map(p => \`
-                    <div class="glass-card p-4 rounded-2xl flex justify-between items-center transition hover:border-amber-400/70 shadow-lg">
+                    <div class="glass-card p-4 rounded-2xl flex justify-between items-center transition hover:border-amber-400 shadow-lg">
                       <div>
-                        <h4 class="font-black text-amber-300 text-sm">\${p.name}</h4>
+                        <h4 class="font-black text-amber-300 text-sm flex items-center gap-1.5"><i class="fas fa-microchip text-xs text-amber-400"></i> \${p.name}</h4>
                         <p class="text-xs text-slate-300 mt-1">Deposit: <span class="font-bold text-white">Rs. \${p.price.toLocaleString()}</span> | Daily 10% ROI: <span class="text-emerald-400 font-black">Rs. \${p.daily}</span></p>
                       </div>
-                      <button onclick="renderDepositModal(\${p.id})" class="bg-gradient-to-r from-amber-400 to-yellow-400 hover:brightness-110 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs uppercase tracking-wider shadow-md transition">Activate</button>
+                      <button onclick="renderDepositModal(\${p.id})" class="bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(250,204,21,0.3)] transition">Activate</button>
                     </div>
                   \`).join('')}
                 </div>
@@ -658,7 +789,7 @@ app.get('/', (req, res) => {
           const res = await api('/api/admin/data', {});
           document.getElementById('app').innerHTML = \`
             <div class="py-6 space-y-6">
-              <div class="flex justify-between items-center glass-card border-amber-500/40 p-5 rounded-2xl shadow-xl">
+              <div class="flex justify-between items-center glass-card border-amber-500/40 p-5 rounded-2xl">
                 <div>
                   <span class="text-[10px] uppercase font-black bg-amber-500 text-slate-950 px-2 py-0.5 rounded">Master Admin</span>
                   <h2 class="text-lg font-black text-amber-400 mt-1">Syndicate Control Panel</h2>
@@ -668,7 +799,7 @@ app.get('/', (req, res) => {
               </div>
 
               <!-- Pending Deposits (With Screenshot View & Plan Override Dropdown) -->
-              <div class="glass-card p-5 rounded-2xl shadow-xl">
+              <div class="glass-card p-5 rounded-2xl">
                 <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-clock mr-1"></i> Pending Deposit Approvals</h3>
                 <div class="space-y-3">
                   \${res.deposits.length === 0 ? '<p class="text-xs text-slate-500 italic">No pending deposits.</p>' : ''}
@@ -711,7 +842,7 @@ app.get('/', (req, res) => {
               </div>
 
               <!-- Pending Withdrawals -->
-              <div class="glass-card p-5 rounded-2xl shadow-xl">
+              <div class="glass-card p-5 rounded-2xl">
                 <h3 class="text-sm font-black text-rose-400 mb-3 uppercase tracking-wider"><i class="fas fa-money-bill-wave mr-1"></i> Pending Withdrawals (Min 300)</h3>
                 <div class="space-y-3">
                   \${res.withdrawals.length === 0 ? '<p class="text-xs text-slate-500 italic">No pending withdrawals.</p>' : ''}
@@ -731,7 +862,7 @@ app.get('/', (req, res) => {
               </div>
 
               <!-- All Registered Users -->
-              <div class="glass-card p-5 rounded-2xl shadow-xl">
+              <div class="glass-card p-5 rounded-2xl">
                 <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-users mr-1"></i> Registered Elite Users (\${res.users.length})</h3>
                 <div class="space-y-3">
                   \${res.users.length === 0 ? '<p class="text-xs text-slate-500 italic">No registered users yet.</p>' : ''}
