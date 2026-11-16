@@ -24,30 +24,41 @@ const PLANS = [
 
 const nowTime = Date.now();
 
-// Pre-loaded 22 Active Users (Zero Data Loss Guarantee)
+// Pre-loaded 33 Active Users (Updated Backup)
 const INITIAL_USERS = [
-  { id: 370019, name: 'Malik', phone: '03074532161', pass: null, balance: 25001.5, activePlan: PLANS[5], lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 14, isAdmin: false },
-  { id: 752498, name: 'Hamza', phone: '03146317272', pass: null, balance: 7001, activePlan: PLANS[3], lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 4, isAdmin: false },
-  { id: 470999, name: 'Haneef', phone: '03105426316', pass: null, balance: 3000, activePlan: PLANS[2], lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 9, isAdmin: false },
-  { id: 138967, name: 'Arham', phone: '03466400034', pass: null, balance: 12000, activePlan: PLANS[3], lastClaimTime: nowTime, referredBy: 3, refEarnings: 0, customTeamCount: 9, isAdmin: false },
+  { id: 370019, name: 'Malik', phone: '03074532161', pass: null, balance: 5513, activePlan: PLANS[4], lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 24, isAdmin: false },
+  { id: 752498, name: 'Hamza', phone: '03146317272', pass: null, balance: 25640, activePlan: PLANS[3], lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 16, isAdmin: false },
+  { id: 470999, name: 'Haneef', phone: '03105426316', pass: null, balance: 13480, activePlan: PLANS[2], lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 9, isAdmin: false },
+  { id: 138967, name: 'Arham', phone: '03466400034', pass: null, balance: 13800, activePlan: PLANS[3], lastClaimTime: nowTime, referredBy: 3, refEarnings: 0, customTeamCount: 9, isAdmin: false },
   { id: 594811, name: 'Muhammad Shahwaiz Shaheer', phone: '03355333310', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 461445, name: 'Muhammad Ali', phone: '0318 0816215', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 785971, name: 'Abdulhadi', phone: '+923135861028', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 292161, name: 'Muzamil Khan', phone: '03126112337', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 221169, name: 'Zainab umer', phone: '0327 9189534', pass: null, balance: 1200, activePlan: PLANS[3], lastClaimTime: nowTime, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 221169, name: 'Zainab umer', phone: '0327 9189534', pass: null, balance: 600, activePlan: PLANS[3], lastClaimTime: nowTime, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 260690, name: 'Jani gujjar', phone: '03204049533', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 190187, name: 'shahzaib niazi', phone: '03188117086', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 946320, name: 'Muhammad Arslan', phone: '03215706658', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 292161, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 362105, name: 'Hashir amin', phone: '03402828581', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 982227, name: 'Moiz Ul Eman', phone: '03708058726', pass: null, balance: 150, activePlan: PLANS[0], lastClaimTime: nowTime, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 982227, name: 'Moiz Ul Eman', phone: '03708058726', pass: null, balance: 0, activePlan: PLANS[1], lastClaimTime: nowTime, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 399878, name: 'Luqman', phone: '03295825871', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 993595, name: 'Shahid zaman', phone: '03005498117', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 399878, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 949009, name: 'Daniyal', phone: '0318 5223061', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 982852, name: 'Kamran Maqsood', phone: '03484097886', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 377280, name: 'Shehzan', phone: '03182628010', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 203973, name: 'Haseeb Ahmed', phone: '03105941294', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 930607, name: 'Muhammad Abdullah', phone: '03104166661', pass: null, balance: 50, activePlan: PLANS[0], lastClaimTime: nowTime, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 479946, name: 'Muhammed Zafir khan', phone: '03001555644', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 930607, refEarnings: 0, customTeamCount: null, isAdmin: false }
+  { id: 930607, name: 'Muhammad Abdullah', phone: '03104166661', pass: null, balance: 250, activePlan: PLANS[0], lastClaimTime: nowTime, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 479946, name: 'Muhammed Zafir khan', phone: '03001555644', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 930607, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 808836, name: 'Muhammad Fahad ameer', phone: '03355328153', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 190187, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 787130, name: 'Malik adnan', phone: '03183615420', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 391226, name: 'Palwasha', phone: '03135309990', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 983196, name: 'Mehran Mehfooz', phone: '03447969768', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 535236, name: 'Yasir Awan', phone: '03704791734', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 693023, name: 'Hasnain Aqdas', phone: '03305349779', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 211015, name: 'Abdul Samad', phone: '03715291288', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 190187, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 297188, name: 'HK123', phone: '03165348096', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 927719, name: 'Muzzamil jutt', phone: '03199710144', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 693023, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 153071, name: 'Hassaan', phone: '03105212438', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 693023, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 555641, name: 'Khizar Khattak', phone: '+923368664218', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false }
 ];
 
 let db = {
@@ -188,7 +199,7 @@ app.get('/', (req, res) => {
         }
         /* Neon Glassmorphism Card */
         .glass-card {
-          background: rgba(10, 15, 30, 0.78);
+          background: rgba(10, 15, 30, 0.82);
           backdrop-filter: blur(18px);
           -webkit-backdrop-filter: blur(18px);
           border: 1px solid rgba(250, 204, 21, 0.32);
@@ -225,9 +236,9 @@ app.get('/', (req, res) => {
       <div class="w-full bg-slate-950/90 border-b border-amber-500/30 py-1.5 overflow-hidden z-20 sticky top-0 backdrop-blur-md">
         <div class="animate-ticker text-[11px] font-bold tracking-wider text-amber-300">
           <span class="mx-4"><i class="fab fa-bitcoin text-amber-400 mr-1"></i> BTC/USDT AI-Node: <span class="text-emerald-400">+10.0% Daily Yield Active</span></span>
-          <span class="mx-4">⚡ VIP #370019 received <span class="text-emerald-400">Rs. 5,000</span> Auto-ROI</span>
-          <span class="mx-4">💸 VIP #752498 withdrew <span class="text-emerald-400">Rs. 3,500</span> via EasyPaisa</span>
-          <span class="mx-4">🔥 VIP #138967 earned <span class="text-amber-400">1% Team Royalty Bonus</span></span>
+          <span class="mx-4">⚡ VIP #370019 received <span class="text-emerald-400">Rs. 1,500</span> Auto-ROI</span>
+          <span class="mx-4">💸 VIP #752498 withdrew <span class="text-emerald-400">Rs. 4,500</span> via EasyPaisa</span>
+          <span class="mx-4">🔥 VIP #982227 earned <span class="text-amber-400">1% Team Royalty Bonus</span></span>
           <span class="mx-4">💎 Instant NayaPay & EasyPaisa Automated Payouts Live 24/7</span>
         </div>
       </div>
@@ -278,7 +289,6 @@ app.get('/', (req, res) => {
         function animateCryptoBg() {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-          // Draw futuristic neural network lines between nearby crypto nodes
           for (let i = 0; i < particles.length; i++) {
             for (let j = i + 1; j < particles.length; j++) {
               const dx = particles[i].x - particles[j].x;
@@ -295,7 +305,6 @@ app.get('/', (req, res) => {
             }
           }
 
-          // Draw floating glowing crypto symbols
           particles.forEach(p => {
             p.x += p.vx;
             p.y += p.vy;
@@ -497,57 +506,85 @@ app.get('/', (req, res) => {
           const inviteLink = window.location.origin + '/?ref=' + currentUser.id;
 
           document.getElementById('app').innerHTML = \`
-            <div class="py-3 space-y-5">
+            <div class="py-2 space-y-4">
               <!-- Top Profile Bar -->
-              <div class="flex justify-between items-center glass-card p-4 rounded-2xl">
+              <div class="flex justify-between items-center glass-card p-3.5 rounded-2xl">
                 <div class="flex items-center gap-3">
-                  <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg">
+                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-slate-950 font-black text-lg shadow-lg">
                     <i class="fab fa-bitcoin"></i>
                   </div>
                   <div>
                     <span class="text-[10px] uppercase tracking-widest bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-black border border-amber-500/30">VIP NODE #\${currentUser.id}</span>
-                    <h2 class="text-base font-black text-white mt-0.5">\${currentUser.name}</h2>
-                    <p class="text-[11px] text-slate-400">\${currentUser.phone}</p>
+                    <h2 class="text-sm font-black text-white mt-0.5">\${currentUser.name}</h2>
                   </div>
                 </div>
-                <button onclick="logout()" class="bg-rose-500/15 text-rose-400 border border-rose-500/30 px-3 py-2 rounded-xl text-xs font-bold hover:bg-rose-500 hover:text-white transition">Logout</button>
+                <button onclick="logout()" class="bg-rose-500/15 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-rose-500 hover:text-white transition">Logout</button>
               </div>
 
               <!-- Futuristic Main Portfolio Card -->
-              <div class="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-600 p-6 rounded-3xl shadow-[0_0_35px_rgba(245,158,11,0.35)] text-slate-950 relative overflow-hidden border border-yellow-200/50">
-                <div class="absolute -right-6 -bottom-6 text-slate-950/15 text-9xl font-black pointer-events-none"><i class="fab fa-bitcoin fa-spin" style="animation-duration: 25s;"></i></div>
+              <div class="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-600 p-5 rounded-3xl shadow-[0_0_35px_rgba(245,158,11,0.35)] text-slate-950 relative overflow-hidden border border-yellow-200/50">
+                <div class="absolute -right-6 -bottom-6 text-slate-950/15 text-8xl font-black pointer-events-none"><i class="fab fa-bitcoin fa-spin" style="animation-duration: 25s;"></i></div>
                 <div class="flex justify-between items-start relative z-10">
                   <div>
-                    <p class="text-xs uppercase font-black tracking-widest opacity-80 flex items-center gap-1"><i class="fas fa-shield-alt"></i> Total Vault Balance</p>
-                    <h1 class="text-4xl font-black mt-1">Rs. \${Number(currentUser.balance).toLocaleString()}</h1>
+                    <p class="text-[11px] uppercase font-black tracking-widest opacity-80 flex items-center gap-1"><i class="fas fa-shield-alt"></i> Total Vault Balance</p>
+                    <h1 class="text-3xl font-black mt-0.5">Rs. \${Number(currentUser.balance).toLocaleString()}</h1>
                   </div>
-                  <span class="bg-slate-950 text-amber-400 text-[10px] font-black px-3 py-1 rounded-full uppercase shadow-md border border-amber-400/40">⚡ 10% Daily AI-ROI</span>
+                  <span class="bg-slate-950 text-amber-400 text-[10px] font-black px-2.5 py-1 rounded-full uppercase shadow-md border border-amber-400/40">⚡ 10% Daily ROI</span>
                 </div>
-                <div class="mt-5 grid grid-cols-3 gap-2.5 relative z-10">
-                  <button onclick="claimDaily()" class="bg-slate-950 text-amber-400 font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1.5 border border-amber-400/40">
+                <div class="mt-4 grid grid-cols-3 gap-2 relative z-10">
+                  <button onclick="claimDaily()" class="bg-slate-950 text-amber-400 font-extrabold py-2.5 px-2 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1 border border-amber-400/40">
                     <i class="fas fa-bolt text-yellow-400"></i> Collect ROI
                   </button>
-                  <button onclick="renderDepositModal(2)" class="bg-emerald-600 text-white font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-emerald-500 transition flex items-center justify-center gap-1.5 border border-emerald-300/40">
+                  <button onclick="renderDepositModal(2)" class="bg-emerald-600 text-white font-extrabold py-2.5 px-2 rounded-xl text-xs shadow-xl hover:bg-emerald-500 transition flex items-center justify-center gap-1 border border-emerald-300/40">
                     <i class="fas fa-plus-circle"></i> Deposit
                   </button>
-                  <button onclick="renderWithdrawModal()" class="bg-slate-950 text-rose-400 font-extrabold py-3 px-2 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1.5 border border-rose-500/40">
+                  <button onclick="renderWithdrawModal()" class="bg-slate-950 text-rose-400 font-extrabold py-2.5 px-2 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1 border border-rose-500/40">
                     <i class="fas fa-money-bill-wave"></i> Withdraw
                   </button>
                 </div>
               </div>
 
-              <!-- Active Membership Status -->
+              <!-- Active Membership Banner (Right on Top!) -->
               \${currentUser.activePlan ? \`
-                <div class="glass-card p-5 rounded-2xl border-emerald-500/50 relative overflow-hidden">
-                  <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-3 py-1 rounded-bl-xl">⚡ Node Active</div>
-                  <h3 class="font-black text-lg text-amber-300">\${currentUser.activePlan.name}</h3>
+                <div class="glass-card p-4 rounded-2xl border-2 border-emerald-400/70 relative overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                  <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-3 py-0.5 rounded-bl-xl">⚡ ACTIVE PLAN</div>
+                  <h3 class="font-black text-base text-amber-300 flex items-center gap-1.5"><i class="fas fa-crown text-emerald-400"></i> \${currentUser.activePlan.name}</h3>
                   <p class="text-xs text-emerald-400 mt-1 font-bold"><i class="fas fa-sync-alt fa-spin mr-1"></i> Auto-Crediting 10% ROI: Rs. \${currentUser.activePlan.daily} Every 24 Hours</p>
                 </div>
               \` : \`
-                <div class="glass-card p-4 rounded-2xl border-amber-500/30 text-center">
-                  <p class="text-xs text-amber-300 font-bold"><i class="fas fa-rocket mr-1"></i> Activate a VIP Crypto Tier below to receive automatic 10% daily profits every 24 hours!</p>
+                <div class="glass-card p-3 rounded-2xl border border-amber-400/50 text-center bg-amber-500/10">
+                  <p class="text-xs text-amber-300 font-bold"><i class="fas fa-rocket mr-1"></i> Select & Activate a VIP Tier below to start earning 10% daily profit!</p>
                 </div>
               \`}
+
+              <!-- FRONT & CENTER: VIP Investment Tiers (2-Column Grid so ALL plans are visible without scrolling!) -->
+              <div>
+                <div class="flex justify-between items-center mb-2.5">
+                  <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="fab fa-bitcoin text-base"></i> Activate VIP Mining Tier (10% Daily)
+                  </h3>
+                  <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold border border-amber-500/30">Instant Activation</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2.5">
+                  \${plans.map(p => {
+                    const isCurrent = currentUser.activePlan && Number(currentUser.activePlan.id) === Number(p.id);
+                    return \`
+                      <div class="glass-card p-3.5 rounded-2xl flex flex-col justify-between relative overflow-hidden transition \${isCurrent ? 'border-2 border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.25)]' : 'hover:border-amber-400'}">
+                        \${isCurrent ? '<div class="bg-emerald-500 text-slate-950 text-[9px] font-black uppercase px-2 py-0.5 rounded-bl-lg absolute top-0 right-0">⚡ ACTIVE</div>' : ''}
+                        <div>
+                          <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VIP \${p.id}</span>
+                          <h4 class="font-black text-white text-xs mt-1.5 truncate">\${p.name.replace('VIP ' + p.id + ' - ', '')}</h4>
+                          <p class="text-base font-black text-amber-400 mt-1">Rs. \${p.price.toLocaleString()}</p>
+                          <p class="text-[11px] text-emerald-400 font-bold mt-0.5"><i class="fas fa-arrow-trend-up mr-1"></i>Daily: Rs. \${p.daily.toLocaleString()}</p>
+                        </div>
+                        <button onclick="renderDepositModal(\${p.id})" class="mt-3 w-full \${isCurrent ? 'bg-emerald-500 text-slate-950' : 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950'} hover:brightness-110 font-black py-2 rounded-xl text-[11px] uppercase tracking-wider shadow-md transition">
+                          \${isCurrent ? 'Upgrade / Renew' : 'Activate Now'}
+                        </button>
+                      </div>
+                    \`;
+                  }).join('')}
+                </div>
+              </div>
 
               <!-- Invite & Earn 1% Daily Banner -->
               <div class="glass-card p-5 rounded-3xl border border-amber-400/40 relative overflow-hidden">
@@ -611,22 +648,6 @@ app.get('/', (req, res) => {
                       </div>
                     \`).join('')}
                   </div>
-                </div>
-              </div>
-
-              <!-- Investment Tiers -->
-              <div>
-                <h3 class="text-sm font-black mb-3 text-amber-400 uppercase tracking-wider flex items-center gap-2"><i class="fab fa-bitcoin text-lg"></i> VIP Crypto Mining Tiers (10% Daily Return)</h3>
-                <div class="grid grid-cols-1 gap-3">
-                  \${plans.map(p => \`
-                    <div class="glass-card p-4 rounded-2xl flex justify-between items-center transition hover:border-amber-400 shadow-lg">
-                      <div>
-                        <h4 class="font-black text-amber-300 text-sm flex items-center gap-1.5"><i class="fas fa-microchip text-xs text-amber-400"></i> \${p.name}</h4>
-                        <p class="text-xs text-slate-300 mt-1">Deposit: <span class="font-bold text-white">Rs. \${p.price.toLocaleString()}</span> | Daily 10% ROI: <span class="text-emerald-400 font-black">Rs. \${p.daily}</span></p>
-                      </div>
-                      <button onclick="renderDepositModal(\${p.id})" class="bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(250,204,21,0.3)] transition">Activate</button>
-                    </div>
-                  \`).join('')}
                 </div>
               </div>
             </div>
