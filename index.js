@@ -469,7 +469,7 @@ app.get('/', (req, res) => {
                 </button>
               </div>
 
-              <!-- FRONT & CENTER: VIP Investment Tiers (Clean Header) -->
+              <!-- VIP MINING TIERS (CLEAN, NO EXTRA TEXT) -->
               <div>
                 <div class="flex justify-between items-center mb-2">
                   <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -555,7 +555,7 @@ app.get('/', (req, res) => {
                         </div>
                         <span class="px-2 py-0.5 rounded font-bold uppercase text-[9px] \${d.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : d.status === 'Rejected' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">\${d.status}</span>
                       </div>
-                    \`).join('')}
+                    \슐).join('')}
                   </div>
                 </div>
 
