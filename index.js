@@ -14,12 +14,12 @@ if (!fs.existsSync(DATA_DIR)) {
 const DB_FILE = path.join(DATA_DIR, 'database.json');
 
 const PLANS = [
-  { id: 1, name: 'VIP 1 - Starter Elite', price: 500, daily: 50, days: 30 },
-  { id: 2, name: 'VIP 2 - Bronze Venture', price: 1500, daily: 150, days: 30 },
-  { id: 3, name: 'VIP 3 - Silver Capital', price: 3000, daily: 300, days: 30 },
-  { id: 4, name: 'VIP 4 - Gold Tycoon', price: 6000, daily: 600, days: 30 },
-  { id: 5, name: 'VIP 5 - Platinum Empire', price: 15000, daily: 1500, days: 30 },
-  { id: 6, name: 'VIP 6 - Diamond Syndicate', price: 50000, daily: 5000, days: 30 }
+  { id: 1, name: 'VIP 1 - Starter Elite', price: 500, daily: 50, days: 30, reqInvites: 0 },
+  { id: 2, name: 'VIP 2 - Bronze Venture', price: 1500, daily: 150, days: 30, reqInvites: 0 },
+  { id: 3, name: 'VIP 3 - Silver Capital', price: 3000, daily: 300, days: 20, reqInvites: 0 },
+  { id: 4, name: 'VIP 4 - Gold Tycoon', price: 6000, daily: 600, days: 20, reqInvites: 0 },
+  { id: 5, name: 'VIP 5 - Platinum Empire', price: 15000, daily: 1500, days: 20, reqInvites: 3 }, // Requires 3 Invites
+  { id: 6, name: 'VIP 6 - Diamond Syndicate', price: 50000, daily: 5000, days: 20, reqInvites: 5 } // Requires 5 Invites
 ];
 
 const nowTime = Date.now();
@@ -501,6 +501,7 @@ app.get('/', (req, res) => {
           const res = await api('/api/user', { id: currentUser.id });
           currentUser = res.user;
           const plans = res.plans;
+          const userTeamCount = res.teamCount || 0;
           const userDeposits = res.deposits || [];
           const userWithdrawals = res.withdrawals || [];
           const inviteLink = window.location.origin + '/?ref=' + currentUser.id;
@@ -544,12 +545,12 @@ app.get('/', (req, res) => {
                 </div>
               </div>
 
-              <!-- Active Membership Banner (Right on Top!) -->
+              <!-- Active Membership Banner -->
               \${currentUser.activePlan ? \`
                 <div class="glass-card p-4 rounded-2xl border-2 border-emerald-400/70 relative overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.2)]">
                   <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-3 py-0.5 rounded-bl-xl">⚡ ACTIVE PLAN</div>
                   <h3 class="font-black text-base text-amber-300 flex items-center gap-1.5"><i class="fas fa-crown text-emerald-400"></i> \${currentUser.activePlan.name}</h3>
-                  <p class="text-xs text-emerald-400 mt-1 font-bold"><i class="fas fa-sync-alt fa-spin mr-1"></i> Auto-Crediting 10% ROI: Rs. \${currentUser.activePlan.daily} Every 24 Hours</p>
+                  <p class="text-xs text-emerald-400 mt-1 font-bold"><i class="fas fa-sync-alt fa-spin mr-1"></i> Auto-Crediting 10% ROI: Rs. \${currentUser.activePlan.daily} Every 24 Hours (\${currentUser.activePlan.days} Days Validity)</p>
                 </div>
               \` : \`
                 <div class="glass-card p-3 rounded-2xl border border-amber-400/50 text-center bg-amber-500/10">
@@ -557,28 +558,47 @@ app.get('/', (req, res) => {
                 </div>
               \`}
 
-              <!-- FRONT & CENTER: VIP Investment Tiers (2-Column Grid so ALL plans are visible without scrolling!) -->
+              <!-- FRONT & CENTER: VIP Investment Tiers (With Automatic Invite Unlock System) -->
               <div>
                 <div class="flex justify-between items-center mb-2.5">
                   <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <i class="fab fa-bitcoin text-base"></i> Activate VIP Mining Tier (10% Daily)
+                    <i class="fab fa-bitcoin text-base"></i> VIP Mining Tiers (Auto-Unlock via Invites)
                   </h3>
-                  <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold border border-amber-500/30">Instant Activation</span>
+                  <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-500/30">Your Invites: \${userTeamCount}</span>
                 </div>
                 <div class="grid grid-cols-2 gap-2.5">
                   \${plans.map(p => {
                     const isCurrent = currentUser.activePlan && Number(currentUser.activePlan.id) === Number(p.id);
+                    const reqInv = p.reqInvites || 0;
+                    const isLocked = userTeamCount < reqInv;
+
                     return \`
-                      <div class="glass-card p-3.5 rounded-2xl flex flex-col justify-between relative overflow-hidden transition \${isCurrent ? 'border-2 border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.25)]' : 'hover:border-amber-400'}">
+                      <div class="glass-card p-3.5 rounded-2xl flex flex-col justify-between relative overflow-hidden transition \${isCurrent ? 'border-2 border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.25)]' : isLocked ? 'opacity-70 border-rose-500/30' : 'hover:border-amber-400'}">
                         \${isCurrent ? '<div class="bg-emerald-500 text-slate-950 text-[9px] font-black uppercase px-2 py-0.5 rounded-bl-lg absolute top-0 right-0">⚡ ACTIVE</div>' : ''}
+                        \${isLocked ? '<div class="bg-rose-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-bl-lg absolute top-0 right-0">🔒 LOCKED</div>' : ''}
+                        
                         <div>
-                          <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VIP \${p.id}</span>
+                          <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VIP \${p.id}</span>
+                            <span class="text-[10px] font-bold text-sky-300 bg-sky-950/80 px-2 py-0.5 rounded-full border border-sky-500/30">\${p.days} Days</span>
+                          </div>
                           <h4 class="font-black text-white text-xs mt-1.5 truncate">\${p.name.replace('VIP ' + p.id + ' - ', '')}</h4>
                           <p class="text-base font-black text-amber-400 mt-1">Rs. \${p.price.toLocaleString()}</p>
                           <p class="text-[11px] text-emerald-400 font-bold mt-0.5"><i class="fas fa-arrow-trend-up mr-1"></i>Daily: Rs. \${p.daily.toLocaleString()}</p>
+                          
+                          \${reqInv > 0 ? \`
+                            <div class="mt-2 pt-2 border-t border-slate-800 text-[10px] font-bold \${userTeamCount >= reqInv ? 'text-emerald-400' : 'text-rose-400'}">
+                              <i class="fas \${userTeamCount >= reqInv ? 'fa-check-circle' : 'fa-lock'} mr-1"></i> \${userTeamCount >= reqInv ? 'Unlocked (Req: ' + reqInv + ')' : 'Need ' + (reqInv - userTeamCount) + ' more active invites (Req: ' + reqInv + ')'}
+                            </div>
+                          \` : \`
+                            <div class="mt-2 pt-2 border-t border-slate-800 text-[10px] font-bold text-slate-400">
+                              <i class="fas fa-unlock mr-1"></i> Open to All Members
+                            </div>
+                          \`}
                         </div>
-                        <button onclick="renderDepositModal(\${p.id})" class="mt-3 w-full \${isCurrent ? 'bg-emerald-500 text-slate-950' : 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950'} hover:brightness-110 font-black py-2 rounded-xl text-[11px] uppercase tracking-wider shadow-md transition">
-                          \${isCurrent ? 'Upgrade / Renew' : 'Activate Now'}
+
+                        <button onclick="\${isLocked ? 'alert(\\'🔒 This tier is locked! You need at ' + reqInv + ' active team invites with a deposit to unlock VIP ' + p.id + '. Your current active invites: ' + userTeamCount + '\\')' : 'renderDepositModal(' + p.id + ')'}" class="mt-3 w-full \${isCurrent ? 'bg-emerald-500 text-slate-950' : isLocked ? 'bg-slate-800 text-slate-400 cursor-not-allowed border border-rose-500/40' : 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950'} font-black py-2 rounded-xl text-[11px] uppercase tracking-wider shadow-md transition">
+                          \${isCurrent ? 'Upgrade / Renew' : isLocked ? '🔒 Locked (' + userTeamCount + '/' + reqInv + ')' : 'Activate Now'}
                         </button>
                       </div>
                     \`;
@@ -592,15 +612,15 @@ app.get('/', (req, res) => {
                   <span class="bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 text-[10px] font-black uppercase px-2.5 py-1 rounded-full">🔥 Viral Team Syndicate</span>
                   <span class="text-xs font-black text-emerald-400">Daily 1% Deposit Bonus</span>
                 </div>
-                <h3 class="text-base font-black text-white mt-1">Invite Friends & Earn Unlimited Daily Royalties!</h3>
+                <h3 class="text-base font-black text-white mt-1">Invite Friends & Unlock VIP 5 & VIP 6!</h3>
                 <p class="text-xs text-slate-300 mt-1 leading-relaxed">
-                  Share your unique referral link below! You automatically receive <span class="text-amber-400 font-bold">1% of your friend's total deposit</span> every single day! For example, if your friend activates <span class="text-amber-300 font-bold">Rs. 3,000</span>, you earn <span class="text-emerald-400 font-bold">Rs. 30 Daily</span>; on <span class="text-amber-300 font-bold">Rs. 15,000</span>, you earn <span class="text-emerald-400 font-bold">Rs. 150 Daily</span> automatically!
+                  Share your unique referral link below! Get <span class="text-amber-400 font-bold">1% of your friend's total deposit</span> every day! Plus, bringing <span class="text-emerald-400 font-bold">3 active invites</span> unlocks VIP 5 (Rs. 15,000), and <span class="text-emerald-400 font-bold">5 active invites</span> unlocks VIP 6 (Rs. 50,000)!
                 </p>
 
                 <div class="grid grid-cols-2 gap-2.5 my-3">
                   <div class="bg-slate-950/90 p-3 rounded-xl border border-amber-500/20 text-center">
                     <p class="text-[10px] uppercase text-slate-400 font-bold">Active Team Invites</p>
-                    <p class="text-lg font-black text-amber-400 mt-0.5">\${res.teamCount || 0} \${(res.teamCount === 1) ? 'Invite' : 'Invites'}</p>
+                    <p class="text-lg font-black text-amber-400 mt-0.5">\${userTeamCount} Invites</p>
                   </div>
                   <div class="bg-slate-950/90 p-3 rounded-xl border border-emerald-500/20 text-center">
                     <p class="text-[10px] uppercase text-slate-400 font-bold">1% Referral Bonus</p>
@@ -700,12 +720,12 @@ app.get('/', (req, res) => {
                   <div>
                     <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Select VIP Membership Tier</label>
                     <select id="depPlan" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-amber-400">
-                      <option value="1" \${selectedPlanId == 1 ? 'selected' : ''}>VIP 1 - Starter Elite (Rs. 500 -> Daily Rs. 50)</option>
-                      <option value="2" \${selectedPlanId == 2 ? 'selected' : ''}>VIP 2 - Bronze Venture (Rs. 1500 -> Daily Rs. 150)</option>
-                      <option value="3" \${selectedPlanId == 3 ? 'selected' : ''}>VIP 3 - Silver Capital (Rs. 3000 -> Daily Rs. 300)</option>
-                      <option value="4" \${selectedPlanId == 4 ? 'selected' : ''}>VIP 4 - Gold Tycoon (Rs. 6000 -> Daily Rs. 600)</option>
-                      <option value="5" \${selectedPlanId == 5 ? 'selected' : ''}>VIP 5 - Platinum Empire (Rs. 15000 -> Daily Rs. 1500)</option>
-                      <option value="6" \${selectedPlanId == 6 ? 'selected' : ''}>VIP 6 - Diamond Syndicate (Rs. 50000 -> Daily Rs. 5000)</option>
+                      <option value="1" \${selectedPlanId == 1 ? 'selected' : ''}>VIP 1 - Rs. 500 (30 Days)</option>
+                      <option value="2" \${selectedPlanId == 2 ? 'selected' : ''}>VIP 2 - Rs. 1,500 (30 Days)</option>
+                      <option value="3" \${selectedPlanId == 3 ? 'selected' : ''}>VIP 3 - Rs. 3,000 (20 Days)</option>
+                      <option value="4" \${selectedPlanId == 4 ? 'selected' : ''}>VIP 4 - Rs. 6,000 (20 Days)</option>
+                      <option value="5" \${selectedPlanId == 5 ? 'selected' : ''}>VIP 5 - Rs. 15,000 (20 Days - Req 3 Invites)</option>
+                      <option value="6" \${selectedPlanId == 6 ? 'selected' : ''}>VIP 6 - Rs. 50,000 (20 Days - Req 5 Invites)</option>
                     </select>
                   </div>
                   <div>
@@ -845,12 +865,12 @@ app.get('/', (req, res) => {
                       <div class="pt-2 border-t border-slate-800/80 flex flex-col gap-2">
                         <label class="text-[10px] uppercase text-slate-400 font-bold">Verify Screenshot Amount & Select Plan to Activate:</label>
                         <select id="overridePlan_\${d.id}" class="w-full bg-slate-900 border border-amber-500/40 rounded-lg px-2.5 py-2 text-white text-xs">
-                          <option value="1" \${d.planId == 1 ? 'selected' : ''}>VIP 1 - Rs. 500 (Daily Rs. 50)</option>
-                          <option value="2" \${d.planId == 2 ? 'selected' : ''}>VIP 2 - Rs. 1,500 (Daily Rs. 150)</option>
-                          <option value="3" \${d.planId == 3 ? 'selected' : ''}>VIP 3 - Rs. 3,000 (Daily Rs. 300)</option>
-                          <option value="4" \${d.planId == 4 ? 'selected' : ''}>VIP 4 - Rs. 6,000 (Daily Rs. 600)</option>
-                          <option value="5" \${d.planId == 5 ? 'selected' : ''}>VIP 5 - Rs. 15,000 (Daily Rs. 1,500)</option>
-                          <option value="6" \${d.planId == 6 ? 'selected' : ''}>VIP 6 - Rs. 50,000 (Daily Rs. 5,000)</option>
+                          <option value="1" \${d.planId == 1 ? 'selected' : ''}>VIP 1 - Rs. 500 (30 Days)</option>
+                          <option value="2" \${d.planId == 2 ? 'selected' : ''}>VIP 2 - Rs. 1,500 (30 Days)</option>
+                          <option value="3" \${d.planId == 3 ? 'selected' : ''}>VIP 3 - Rs. 3,000 (20 Days)</option>
+                          <option value="4" \${d.planId == 4 ? 'selected' : ''}>VIP 4 - Rs. 6,000 (20 Days)</option>
+                          <option value="5" \${d.planId == 5 ? 'selected' : ''}>VIP 5 - Rs. 15,000 (20 Days - Req 3 Invites)</option>
+                          <option value="6" \${d.planId == 6 ? 'selected' : ''}>VIP 6 - Rs. 50,000 (20 Days - Req 5 Invites)</option>
                         </select>
                         <div class="flex gap-2 pt-1">
                           <button onclick="approveDeposit(\${d.id}, 'Approved')" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-2 rounded-lg font-black uppercase">Approve Plan</button>
@@ -1028,7 +1048,15 @@ app.post('/api/deposit', (req, res) => {
   if (!screenshot) {
     return res.send({ ok: false, msg: 'Please upload a valid payment screenshot!' });
   }
+  const user = db.users.find(u => u.id === Number(userId));
   const p = db.plans.find(x => x.id === Number(planId)) || db.plans[0];
+  
+  // Check automatic invite unlock condition for VIP 5 and VIP 6
+  const teamCount = getUserTeamCount(user);
+  if (p.reqInvites && teamCount < p.reqInvites) {
+    return res.send({ ok: false, msg: '🔒 This tier is locked! You need at least ' + p.reqInvites + ' active team invites to deposit in ' + p.name + '. Your current active invites: ' + teamCount });
+  }
+
   db.deposits.push({
     id: db.deposits.length + 1,
     userId: Number(userId),
