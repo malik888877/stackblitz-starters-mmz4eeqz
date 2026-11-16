@@ -211,7 +211,7 @@ app.get('/', (req, res) => {
       <div class="w-full bg-slate-950/90 border-b border-amber-500/30 py-1.5 overflow-hidden z-20 sticky top-0 backdrop-blur-md">
         <div class="animate-ticker text-[11px] font-bold tracking-wider text-amber-300">
           <span class="mx-4"><i class="fab fa-bitcoin text-amber-400 mr-1"></i> BTC/USDT AI-Node: <span class="text-emerald-400">+10.0% Daily Yield Active</span></span>
-          <span class="mx-4">⚡ VIP #370019 won <span class="text-amber-400">Rs. 5 Daily Lucky Spin Bonus</span></span>
+          <span class="mx-4">⚡ VIP #370019 won <span class="text-amber-400">Rs. 100 Daily Lucky Spin Bonus</span></span>
           <span class="mx-4">💸 VIP #752498 withdrew <span class="text-emerald-400">Rs. 4,500</span> via EasyPaisa</span>
         </div>
       </div>
@@ -453,15 +453,15 @@ app.get('/', (req, res) => {
                 </div>
               \` : ''}
 
-              <!-- SLIM & COMPACT LUCKY SPIN BOX -->
+              <!-- UPDATED LUCKY SPIN BOX (WIN 5 UPTO 500 WITH AMOUNTS: 5, 20, 100, 200, 250, 500) -->
               <div class="glass-card px-3.5 py-2.5 rounded-2xl border border-amber-400/40 flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
                   <div class="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400 text-sm border border-amber-500/40">
                     <i class="fas fa-dharmachakra fa-spin text-amber-400"></i>
                   </div>
                   <div>
-                    <h4 class="font-black text-xs text-amber-300">Daily Lucky Spin</h4>
-                    <p id="spinResultText" class="text-[10px] text-slate-300">Win Free Rs. 5 Daily Cash</p>
+                    <h4 class="font-black text-xs text-amber-300">Lucky Spin Wheel</h4>
+                    <p id="spinResultText" class="text-[10px] text-slate-300">Win 5 Upto 500 (Rs. 5, 20, 100, 200, 250, 500)</p>
                   </div>
                 </div>
                 <button onclick="triggerLuckySpin()" id="spinBtn" class="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black px-3 py-1.5 rounded-xl text-[10px] uppercase shadow-md hover:brightness-110 transition shrink-0">
@@ -585,22 +585,22 @@ app.get('/', (req, res) => {
           if(btn) btn.disabled = true;
           
           let counter = 0;
-          const fakePrizes = ['Rs. 5,000', 'iPhone 16', 'Rs. 500', 'Rs. 50', 'Rs. 1,000'];
+          const possiblePrizes = ['Rs. 5', 'Rs. 20', 'Rs. 100', 'Rs. 200', 'Rs. 250', 'Rs. 500'];
           
           const interval = setInterval(() => {
-            txt.innerText = '🌀 ' + fakePrizes[counter % fakePrizes.length];
+            txt.innerText = '🌀 Spinning... ' + possiblePrizes[counter % possiblePrizes.length];
             counter++;
-          }, 100);
+          }, 80);
 
           setTimeout(async () => {
             clearInterval(interval);
             const res = await api('/api/spin', { userId: currentUser.id });
             if(res.ok) {
-              txt.innerText = '🎉 Won Rs. 5 Bonus!';
+              txt.innerText = '🎉 Won Rs. ' + res.wonAmount + ' Bonus!';
               alert(res.msg);
               renderDashboard();
             } else {
-              txt.innerText = 'Win Free Rs. 5 Daily Cash';
+              txt.innerText = 'Win 5 Upto 500 (Rs. 5, 20, 100...)';
               alert(res.msg);
               if(btn) btn.disabled = false;
             }
@@ -731,7 +731,7 @@ app.get('/', (req, res) => {
           alert(res.msg); renderDashboard();
         }
 
-        // --- ADMIN PANEL WITH PROFIT/LOSS & USER ID SEARCH ---
+        // --- ADMIN PANEL WITH P&L AND USER ID SEARCH ---
         async function renderAdmin() {
           const res = await api('/api/admin/data', {});
           const stats = res.stats || { totalDeposits: 0, totalWithdrawals: 0, netProfit: 0 };
@@ -747,7 +747,7 @@ app.get('/', (req, res) => {
                 <button onclick="logout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold">Logout</button>
               </div>
 
-              <!-- LIVE PROFIT & LOSS LEDGER SUMMARY -->
+              <!-- LIVE PROFIT & LOSS SUMMARY -->
               <div class="grid grid-cols-3 gap-2">
                 <div class="glass-card p-3 rounded-2xl border border-emerald-500/30 text-center">
                   <p class="text-[9px] uppercase text-slate-400 font-bold">Total Inflow</p>
@@ -804,7 +804,7 @@ app.get('/', (req, res) => {
                 </div>
               </div>
 
-              <!-- SEARCH USERS BY ID & FINANCIAL LEDGER -->
+              <!-- USER SEARCH BY ID & LEDGER -->
               <div class="glass-card p-5 rounded-2xl space-y-3">
                 <div class="flex justify-between items-center">
                   <h3 class="text-sm font-black text-amber-400 uppercase tracking-wider"><i class="fas fa-users mr-1"></i> User Financial Ledger</h3>
@@ -829,7 +829,6 @@ app.get('/', (req, res) => {
                         <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">\${u.activePlan ? u.activePlan.name : 'No Active Plan'}</span>
                       </div>
 
-                      <!-- Individual User P&L Stats -->
                       <div class="grid grid-cols-2 gap-2 bg-slate-900/80 p-2 rounded-lg text-[11px]">
                         <div class="text-emerald-400 font-bold">Total Deposited: Rs. \${Number(u.totalDeposited || 0).toLocaleString()}</div>
                         <div class="text-rose-400 font-bold">Total Withdrawn: Rs. \${Number(u.totalWithdrawn || 0).toLocaleString()}</div>
@@ -854,11 +853,7 @@ app.get('/', (req, res) => {
           const cards = document.querySelectorAll('.admin-user-card');
           cards.forEach(card => {
             const text = card.getAttribute('data-search');
-            if (text.includes(query)) {
-              card.style.display = 'block';
-            } else {
-              card.style.display = 'none';
-            }
+            if (text.includes(query)) { card.style.display = 'block'; } else { card.style.display = 'none'; }
           });
         }
 
@@ -947,6 +942,7 @@ app.post('/api/user', (req, res) => {
   res.send({ user, plans: db.plans, teamCount, deposits, withdrawals });
 });
 
+// LUCKY SPIN API (Random amount from 5 to 500, weighted towards 5 and 20)
 app.post('/api/spin', (req, res) => {
   const userId = Number(req.body.userId);
   const user = db.users.find(u => u.id === userId);
@@ -959,10 +955,15 @@ app.post('/api/spin', (req, res) => {
     return res.send({ ok: false, msg: '⏳ You have already used your free spin today! Come back in ' + hoursLeft + ' hour(s).' });
   }
 
+  // Random amount logic: mostly 5 or 20, sometimes 100, 200, 250, 500
+  const prizePool = [5, 5, 5, 20, 20, 100, 200, 250, 500];
+  const wonAmount = prizePool[Math.floor(Math.random() * prizePool.length)];
+
   user.lastSpinTime = now;
-  user.balance = Number((Number(user.balance || 0) + 5).toFixed(2));
+  user.balance = Number((Number(user.balance || 0) + wonAmount).toFixed(2));
   saveDB();
-  res.send({ ok: true, msg: '🎉 Incredible Luck! You won Rs. 5 Free Crypto Reward from the Lucky Spin Wheel!' });
+
+  res.send({ ok: true, wonAmount, msg: '🎉 Incredible Luck! You won Rs. ' + wonAmount + ' from the Lucky Spin Wheel! Added to your vault.' });
 });
 
 app.post('/api/deposit', (req, res) => {
@@ -1012,7 +1013,6 @@ app.post('/api/claim', (req, res) => {
   res.send({ ok: true, msg: 'Daily ROI (Rs. ' + user.activePlan.daily + ') successfully added to your wallet!' });
 });
 
-// ADMIN API WITH TOTAL P&L CALCULATION AND INDIVIDUAL USER LEDGER
 app.post('/api/admin/data', (req, res) => {
   checkPlanExpirations();
   
@@ -1031,12 +1031,7 @@ app.post('/api/admin/data', (req, res) => {
     let uWd = 0;
     db.withdrawals.filter(w => w.userId === u.id && w.status === 'Approved').forEach(w => { uWd += Number(w.amount || 0); });
 
-    return {
-      ...u,
-      teamCount: getUserTeamCount(u),
-      totalDeposited: uDep,
-      totalWithdrawn: uWd
-    };
+    return { ...u, teamCount: getUserTeamCount(u), totalDeposited: uDep, totalWithdrawn: uWd };
   });
 
   res.send({
