@@ -16,49 +16,49 @@ const DB_FILE = path.join(DATA_DIR, 'database.json');
 const PLANS = [
   { id: 1, name: 'VIP 1 - Starter Elite', price: 500, daily: 50, days: 30, reqInvites: 0 },
   { id: 2, name: 'VIP 2 - Bronze Venture', price: 1500, daily: 150, days: 30, reqInvites: 0 },
-  { id: 3, name: 'VIP 3 - Silver Capital', price: 3000, daily: 300, days: 20, reqInvites: 0 },
+  { id: 3, name: 'VIP 3 - Silver Capital', price: 3000, daily: 300, days: 30, reqInvites: 0 },
   { id: 4, name: 'VIP 4 - Gold Tycoon', price: 6000, daily: 600, days: 20, reqInvites: 0 },
-  { id: 5, name: 'VIP 5 - Platinum Empire', price: 15000, daily: 1500, days: 20, reqInvites: 3 }, // Requires 3 Invites
-  { id: 6, name: 'VIP 6 - Diamond Syndicate', price: 50000, daily: 5000, days: 20, reqInvites: 5 } // Requires 5 Invites
+  { id: 5, name: 'VIP 5 - Platinum Empire', price: 15000, daily: 1500, days: 20, reqInvites: 3 },
+  { id: 6, name: 'VIP 6 - Diamond Syndicate', price: 50000, daily: 5000, days: 20, reqInvites: 5 }
 ];
 
 const nowTime = Date.now();
 
 // Pre-loaded 33 Active Users (Updated Backup)
 const INITIAL_USERS = [
-  { id: 370019, name: 'Malik', phone: '03074532161', pass: null, balance: 5513, activePlan: PLANS[4], lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 24, isAdmin: false },
-  { id: 752498, name: 'Hamza', phone: '03146317272', pass: null, balance: 25640, activePlan: PLANS[3], lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 16, isAdmin: false },
-  { id: 470999, name: 'Haneef', phone: '03105426316', pass: null, balance: 13480, activePlan: PLANS[2], lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 9, isAdmin: false },
-  { id: 138967, name: 'Arham', phone: '03466400034', pass: null, balance: 13800, activePlan: PLANS[3], lastClaimTime: nowTime, referredBy: 3, refEarnings: 0, customTeamCount: 9, isAdmin: false },
-  { id: 594811, name: 'Muhammad Shahwaiz Shaheer', phone: '03355333310', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 461445, name: 'Muhammad Ali', phone: '0318 0816215', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 785971, name: 'Abdulhadi', phone: '+923135861028', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 292161, name: 'Muzamil Khan', phone: '03126112337', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 221169, name: 'Zainab umer', phone: '0327 9189534', pass: null, balance: 600, activePlan: PLANS[3], lastClaimTime: nowTime, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 260690, name: 'Jani gujjar', phone: '03204049533', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 190187, name: 'shahzaib niazi', phone: '03188117086', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 946320, name: 'Muhammad Arslan', phone: '03215706658', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 292161, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 362105, name: 'Hashir amin', phone: '03402828581', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 982227, name: 'Moiz Ul Eman', phone: '03708058726', pass: null, balance: 0, activePlan: PLANS[1], lastClaimTime: nowTime, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 399878, name: 'Luqman', phone: '03295825871', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 993595, name: 'Shahid zaman', phone: '03005498117', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 399878, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 949009, name: 'Daniyal', phone: '0318 5223061', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 982852, name: 'Kamran Maqsood', phone: '03484097886', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 377280, name: 'Shehzan', phone: '03182628010', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 203973, name: 'Haseeb Ahmed', phone: '03105941294', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 930607, name: 'Muhammad Abdullah', phone: '03104166661', pass: null, balance: 250, activePlan: PLANS[0], lastClaimTime: nowTime, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 479946, name: 'Muhammed Zafir khan', phone: '03001555644', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 930607, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 808836, name: 'Muhammad Fahad ameer', phone: '03355328153', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 190187, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 787130, name: 'Malik adnan', phone: '03183615420', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 391226, name: 'Palwasha', phone: '03135309990', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 983196, name: 'Mehran Mehfooz', phone: '03447969768', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 535236, name: 'Yasir Awan', phone: '03704791734', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 693023, name: 'Hasnain Aqdas', phone: '03305349779', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 211015, name: 'Abdul Samad', phone: '03715291288', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 190187, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 297188, name: 'HK123', phone: '03165348096', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 927719, name: 'Muzzamil jutt', phone: '03199710144', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 693023, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 153071, name: 'Hassaan', phone: '03105212438', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: 693023, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 555641, name: 'Khizar Khattak', phone: '+923368664218', pass: null, balance: 0, activePlan: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false }
+  { id: 370019, name: 'Malik', phone: '03074532161', pass: null, balance: 5513, activePlan: PLANS[4], planStartTime: nowTime, lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 24, isAdmin: false },
+  { id: 752498, name: 'Hamza', phone: '03146317272', pass: null, balance: 25640, activePlan: PLANS[3], planStartTime: nowTime, lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 16, isAdmin: false },
+  { id: 470999, name: 'Haneef', phone: '03105426316', pass: null, balance: 13480, activePlan: PLANS[2], planStartTime: nowTime, lastClaimTime: nowTime, referredBy: null, refEarnings: 0, customTeamCount: 9, isAdmin: false },
+  { id: 138967, name: 'Arham', phone: '03466400034', pass: null, balance: 13800, activePlan: PLANS[3], planStartTime: nowTime, lastClaimTime: nowTime, referredBy: 3, refEarnings: 0, customTeamCount: 9, isAdmin: false },
+  { id: 594811, name: 'Muhammad Shahwaiz Shaheer', phone: '03355333310', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 461445, name: 'Muhammad Ali', phone: '0318 0816215', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 785971, name: 'Abdulhadi', phone: '+923135861028', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 292161, name: 'Muzamil Khan', phone: '03126112337', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 221169, name: 'Zainab umer', phone: '0327 9189534', pass: null, balance: 600, activePlan: PLANS[3], planStartTime: nowTime, lastClaimTime: nowTime, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 260690, name: 'Jani gujjar', phone: '03204049533', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 190187, name: 'shahzaib niazi', phone: '03188117086', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 946320, name: 'Muhammad Arslan', phone: '03215706658', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 292161, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 362105, name: 'Hashir amin', phone: '03402828581', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 982227, name: 'Moiz Ul Eman', phone: '03708058726', pass: null, balance: 0, activePlan: PLANS[1], planStartTime: nowTime, lastClaimTime: nowTime, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 399878, name: 'Luqman', phone: '03295825871', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 993595, name: 'Shahid zaman', phone: '03005498117', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 399878, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 949009, name: 'Daniyal', phone: '0318 5223061', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 982852, name: 'Kamran Maqsood', phone: '03484097886', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 377280, name: 'Shehzan', phone: '03182628010', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 203973, name: 'Haseeb Ahmed', phone: '03105941294', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 930607, name: 'Muhammad Abdullah', phone: '03104166661', pass: null, balance: 250, activePlan: PLANS[0], planStartTime: nowTime, lastClaimTime: nowTime, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 479946, name: 'Muhammed Zafir khan', phone: '03001555644', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 930607, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 808836, name: 'Muhammad Fahad ameer', phone: '03355328153', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 190187, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 787130, name: 'Malik adnan', phone: '03183615420', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 391226, name: 'Palwasha', phone: '03135309990', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 983196, name: 'Mehran Mehfooz', phone: '03447969768', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 535236, name: 'Yasir Awan', phone: '03704791734', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 693023, name: 'Hasnain Aqdas', phone: '03305349779', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 211015, name: 'Abdul Samad', phone: '03715291288', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 190187, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 297188, name: 'HK123', phone: '03165348096', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 927719, name: 'Muzzamil jutt', phone: '03199710144', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 693023, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 153071, name: 'Hassaan', phone: '03105212438', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: 693023, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 555641, name: 'Khizar Khattak', phone: '+923368664218', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false }
 ];
 
 let db = {
@@ -99,11 +99,33 @@ function saveDB() {
   }
 }
 
+// Automatic Plan Expiry Check (Auto-Expire after 20 or 30 days)
+function checkPlanExpirations() {
+  const now = Date.now();
+  let changed = false;
+  db.users.forEach(u => {
+    if (u.activePlan && u.planStartTime) {
+      const planDurationMs = (u.activePlan.days || 30) * 24 * 60 * 60 * 1000;
+      if (now - u.planStartTime >= planDurationMs) {
+        u.activePlan = null;
+        u.planStartTime = null;
+        u.lastClaimTime = null;
+        changed = true;
+      }
+    }
+  });
+  if (changed) saveDB();
+}
+
 db.users.forEach(u => {
+  if (u.activePlan && !u.planStartTime) {
+    u.planStartTime = Date.now();
+  }
   if (u.activePlan && !u.lastClaimTime) {
     u.lastClaimTime = Date.now();
   }
 });
+checkPlanExpirations();
 saveDB();
 
 const ADMIN_PHONE = '03256098796';
@@ -124,6 +146,7 @@ function getUserTeamCount(user) {
 
 // Credit 10% Daily ROI + 1% of Friend's TOTAL DEPOSIT as Daily Referral Bonus
 function creditUserROI(user) {
+  checkPlanExpirations();
   if (!user || !user.activePlan) return false;
   const planObj = db.plans.find(p => p.id === Number(user.activePlan.id)) || user.activePlan;
   const dailyProfit = Number(planObj.daily || (planObj.price * 0.10));
@@ -133,7 +156,6 @@ function creditUserROI(user) {
   if (user.referredBy) {
     const referrer = db.users.find(u => u.id === Number(user.referredBy));
     if (referrer) {
-      // 1% of the friend's TOTAL DEPOSIT (price) every 24 hours!
       const refBonus = Number((Number(planObj.price) * 0.01).toFixed(2));
       referrer.balance = Number((Number(referrer.balance || 0) + refBonus).toFixed(2));
       referrer.refEarnings = Number(((Number(referrer.refEarnings) || 0) + refBonus).toFixed(2));
@@ -143,8 +165,9 @@ function creditUserROI(user) {
   return true;
 }
 
-// Automatic 24-Hour ROI Credit Timer for ALL Plans
+// Automatic 24-Hour ROI Credit Timer & Expiry Checker
 setInterval(() => {
+  checkPlanExpirations();
   const now = Date.now();
   const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
   let updated = false;
@@ -550,7 +573,7 @@ app.get('/', (req, res) => {
                 <div class="glass-card p-4 rounded-2xl border-2 border-emerald-400/70 relative overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.2)]">
                   <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-3 py-0.5 rounded-bl-xl">⚡ ACTIVE PLAN</div>
                   <h3 class="font-black text-base text-amber-300 flex items-center gap-1.5"><i class="fas fa-crown text-emerald-400"></i> \${currentUser.activePlan.name}</h3>
-                  <p class="text-xs text-emerald-400 mt-1 font-bold"><i class="fas fa-sync-alt fa-spin mr-1"></i> Auto-Crediting 10% ROI: Rs. \${currentUser.activePlan.daily} Every 24 Hours (\${currentUser.activePlan.days} Days Validity)</p>
+                  <p class="text-xs text-emerald-400 mt-1 font-bold"><i class="fas fa-sync-alt fa-spin mr-1"></i> Auto-Crediting 10% ROI: Rs. \${currentUser.activePlan.daily} Every 24 Hours (\${currentUser.activePlan.days} Days Active Plan)</p>
                 </div>
               \` : \`
                 <div class="glass-card p-3 rounded-2xl border border-amber-400/50 text-center bg-amber-500/10">
@@ -558,11 +581,11 @@ app.get('/', (req, res) => {
                 </div>
               \`}
 
-              <!-- FRONT & CENTER: VIP Investment Tiers (With Automatic Invite Unlock System) -->
+              <!-- FRONT & CENTER: VIP Investment Tiers (With Explicit Days & Invite Requirements in Each Box) -->
               <div>
                 <div class="flex justify-between items-center mb-2.5">
                   <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <i class="fab fa-bitcoin text-base"></i> VIP Mining Tiers (Auto-Unlock via Invites)
+                    <i class="fab fa-bitcoin text-base"></i> VIP Mining Tiers (30 Days & 20 Days Active)
                   </h3>
                   <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-500/30">Your Invites: \${userTeamCount}</span>
                 </div>
@@ -573,31 +596,25 @@ app.get('/', (req, res) => {
                     const isLocked = userTeamCount < reqInv;
 
                     return \`
-                      <div class="glass-card p-3.5 rounded-2xl flex flex-col justify-between relative overflow-hidden transition \${isCurrent ? 'border-2 border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.25)]' : isLocked ? 'opacity-70 border-rose-500/30' : 'hover:border-amber-400'}">
+                      <div class="glass-card p-3.5 rounded-2xl flex flex-col justify-between relative overflow-hidden transition \${isCurrent ? 'border-2 border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.25)]' : isLocked ? 'opacity-75 border-rose-500/40 bg-slate-950/90' : 'hover:border-amber-400'}">
                         \${isCurrent ? '<div class="bg-emerald-500 text-slate-950 text-[9px] font-black uppercase px-2 py-0.5 rounded-bl-lg absolute top-0 right-0">⚡ ACTIVE</div>' : ''}
                         \${isLocked ? '<div class="bg-rose-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-bl-lg absolute top-0 right-0">🔒 LOCKED</div>' : ''}
                         
                         <div>
                           <div class="flex justify-between items-center">
                             <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VIP \${p.id}</span>
-                            <span class="text-[10px] font-bold text-sky-300 bg-sky-950/80 px-2 py-0.5 rounded-full border border-sky-500/30">\${p.days} Days</span>
+                            <span class="text-[10px] font-bold text-sky-300 bg-sky-950/80 px-2 py-0.5 rounded-full border border-sky-500/30">\${p.days} Days Active</span>
                           </div>
                           <h4 class="font-black text-white text-xs mt-1.5 truncate">\${p.name.replace('VIP ' + p.id + ' - ', '')}</h4>
                           <p class="text-base font-black text-amber-400 mt-1">Rs. \${p.price.toLocaleString()}</p>
                           <p class="text-[11px] text-emerald-400 font-bold mt-0.5"><i class="fas fa-arrow-trend-up mr-1"></i>Daily: Rs. \${p.daily.toLocaleString()}</p>
                           
-                          \${reqInv > 0 ? \`
-                            <div class="mt-2 pt-2 border-t border-slate-800 text-[10px] font-bold \${userTeamCount >= reqInv ? 'text-emerald-400' : 'text-rose-400'}">
-                              <i class="fas \${userTeamCount >= reqInv ? 'fa-check-circle' : 'fa-lock'} mr-1"></i> \${userTeamCount >= reqInv ? 'Unlocked (Req: ' + reqInv + ')' : 'Need ' + (reqInv - userTeamCount) + ' more active invites (Req: ' + reqInv + ')'}
-                            </div>
-                          \` : \`
-                            <div class="mt-2 pt-2 border-t border-slate-800 text-[10px] font-bold text-slate-400">
-                              <i class="fas fa-unlock mr-1"></i> Open to All Members
-                            </div>
-                          \`}
+                          <div class="mt-2 pt-2 border-t border-slate-800 text-[10px] font-bold \${reqInv > 0 ? (userTeamCount >= reqInv ? 'text-emerald-400' : 'text-rose-400') : 'text-amber-300'}">
+                            \${reqInv > 0 ? (userTeamCount >= reqInv ? '<i class="fas fa-check-circle mr-1"></i>Unlocked (' + reqInv + ' Invites Done)' : '<i class="fas fa-lock mr-1"></i>Need ' + (reqInv - userTeamCount) + ' more invites (Req: ' + reqInv + ')') : '<i class="fas fa-bolt mr-1"></i>Active for ' + p.days + ' Days'}
+                          </div>
                         </div>
 
-                        <button onclick="\${isLocked ? 'alert(\\'🔒 This tier is locked! You need at ' + reqInv + ' active team invites with a deposit to unlock VIP ' + p.id + '. Your current active invites: ' + userTeamCount + '\\')' : 'renderDepositModal(' + p.id + ')'}" class="mt-3 w-full \${isCurrent ? 'bg-emerald-500 text-slate-950' : isLocked ? 'bg-slate-800 text-slate-400 cursor-not-allowed border border-rose-500/40' : 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950'} font-black py-2 rounded-xl text-[11px] uppercase tracking-wider shadow-md transition">
+                        <button onclick="\${isLocked ? 'alert(\\'🔒 VIP ' + p.id + ' is locked! You need at least ' + reqInv + ' active team invites with a deposit to unlock this tier. Your current active invites: ' + userTeamCount + '\\')' : 'renderDepositModal(' + p.id + ')'}" class="mt-3 w-full \${isCurrent ? 'bg-emerald-500 text-slate-950' : isLocked ? 'bg-slate-800 text-slate-400 cursor-not-allowed border border-rose-500/40' : 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950'} font-black py-2 rounded-xl text-[11px] uppercase tracking-wider shadow-md transition">
                           \${isCurrent ? 'Upgrade / Renew' : isLocked ? '🔒 Locked (' + userTeamCount + '/' + reqInv + ')' : 'Activate Now'}
                         </button>
                       </div>
@@ -614,7 +631,7 @@ app.get('/', (req, res) => {
                 </div>
                 <h3 class="text-base font-black text-white mt-1">Invite Friends & Unlock VIP 5 & VIP 6!</h3>
                 <p class="text-xs text-slate-300 mt-1 leading-relaxed">
-                  Share your unique referral link below! Get <span class="text-amber-400 font-bold">1% of your friend's total deposit</span> every day! Plus, bringing <span class="text-emerald-400 font-bold">3 active invites</span> unlocks VIP 5 (Rs. 15,000), and <span class="text-emerald-400 font-bold">5 active invites</span> unlocks VIP 6 (Rs. 50,000)!
+                  Share your unique referral link below! Get <span class="text-amber-400 font-bold">1% of your friend's total deposit</span> every day! Plus, bringing <span class="text-emerald-400 font-bold">3 active invites</span> unlocks VIP 5 (Rs. 15,000 - 20 Days Active), and <span class="text-emerald-400 font-bold">5 active invites</span> unlocks VIP 6 (Rs. 50,000 - 20 Days Active)!
                 </p>
 
                 <div class="grid grid-cols-2 gap-2.5 my-3">
@@ -720,12 +737,12 @@ app.get('/', (req, res) => {
                   <div>
                     <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Select VIP Membership Tier</label>
                     <select id="depPlan" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-amber-400">
-                      <option value="1" \${selectedPlanId == 1 ? 'selected' : ''}>VIP 1 - Rs. 500 (30 Days)</option>
-                      <option value="2" \${selectedPlanId == 2 ? 'selected' : ''}>VIP 2 - Rs. 1,500 (30 Days)</option>
-                      <option value="3" \${selectedPlanId == 3 ? 'selected' : ''}>VIP 3 - Rs. 3,000 (20 Days)</option>
-                      <option value="4" \${selectedPlanId == 4 ? 'selected' : ''}>VIP 4 - Rs. 6,000 (20 Days)</option>
-                      <option value="5" \${selectedPlanId == 5 ? 'selected' : ''}>VIP 5 - Rs. 15,000 (20 Days - Req 3 Invites)</option>
-                      <option value="6" \${selectedPlanId == 6 ? 'selected' : ''}>VIP 6 - Rs. 50,000 (20 Days - Req 5 Invites)</option>
+                      <option value="1" \${selectedPlanId == 1 ? 'selected' : ''}>VIP 1 - Rs. 500 (30 Days Active)</option>
+                      <option value="2" \${selectedPlanId == 2 ? 'selected' : ''}>VIP 2 - Rs. 1,500 (30 Days Active)</option>
+                      <option value="3" \${selectedPlanId == 3 ? 'selected' : ''}>VIP 3 - Rs. 3,000 (30 Days Active)</option>
+                      <option value="4" \${selectedPlanId == 4 ? 'selected' : ''}>VIP 4 - Rs. 6,000 (20 Days Active)</option>
+                      <option value="5" \${selectedPlanId == 5 ? 'selected' : ''}>VIP 5 - Rs. 15,000 (20 Days Active - Req 3 Invites)</option>
+                      <option value="6" \${selectedPlanId == 6 ? 'selected' : ''}>VIP 6 - Rs. 50,000 (20 Days Active - Req 5 Invites)</option>
                     </select>
                   </div>
                   <div>
@@ -839,7 +856,7 @@ app.get('/', (req, res) => {
                 <button onclick="logout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold">Logout</button>
               </div>
 
-              <!-- Pending Deposits (With Screenshot View & Plan Override Dropdown) -->
+              <!-- Pending Deposits -->
               <div class="glass-card p-5 rounded-2xl">
                 <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-clock mr-1"></i> Pending Deposit Approvals</h3>
                 <div class="space-y-3">
@@ -865,12 +882,12 @@ app.get('/', (req, res) => {
                       <div class="pt-2 border-t border-slate-800/80 flex flex-col gap-2">
                         <label class="text-[10px] uppercase text-slate-400 font-bold">Verify Screenshot Amount & Select Plan to Activate:</label>
                         <select id="overridePlan_\${d.id}" class="w-full bg-slate-900 border border-amber-500/40 rounded-lg px-2.5 py-2 text-white text-xs">
-                          <option value="1" \${d.planId == 1 ? 'selected' : ''}>VIP 1 - Rs. 500 (30 Days)</option>
-                          <option value="2" \${d.planId == 2 ? 'selected' : ''}>VIP 2 - Rs. 1,500 (30 Days)</option>
-                          <option value="3" \${d.planId == 3 ? 'selected' : ''}>VIP 3 - Rs. 3,000 (20 Days)</option>
-                          <option value="4" \${d.planId == 4 ? 'selected' : ''}>VIP 4 - Rs. 6,000 (20 Days)</option>
-                          <option value="5" \${d.planId == 5 ? 'selected' : ''}>VIP 5 - Rs. 15,000 (20 Days - Req 3 Invites)</option>
-                          <option value="6" \${d.planId == 6 ? 'selected' : ''}>VIP 6 - Rs. 50,000 (20 Days - Req 5 Invites)</option>
+                          <option value="1" \${d.planId == 1 ? 'selected' : ''}>VIP 1 - Rs. 500 (30 Days Active)</option>
+                          <option value="2" \${d.planId == 2 ? 'selected' : ''}>VIP 2 - Rs. 1,500 (30 Days Active)</option>
+                          <option value="3" \${d.planId == 3 ? 'selected' : ''}>VIP 3 - Rs. 3,000 (30 Days Active)</option>
+                          <option value="4" \${d.planId == 4 ? 'selected' : ''}>VIP 4 - Rs. 6,000 (20 Days Active)</option>
+                          <option value="5" \${d.planId == 5 ? 'selected' : ''}>VIP 5 - Rs. 15,000 (20 Days Active - Req 3 Invites)</option>
+                          <option value="6" \${d.planId == 6 ? 'selected' : ''}>VIP 6 - Rs. 50,000 (20 Days Active - Req 5 Invites)</option>
                         </select>
                         <div class="flex gap-2 pt-1">
                           <button onclick="approveDeposit(\${d.id}, 'Approved')" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-2 rounded-lg font-black uppercase">Approve Plan</button>
@@ -1002,6 +1019,7 @@ app.post('/api/register', (req, res) => {
     pass,
     balance: 0,
     activePlan: null,
+    planStartTime: null,
     lastClaimTime: null,
     referredBy: refId,
     refEarnings: 0,
@@ -1033,6 +1051,7 @@ app.post('/api/login', (req, res) => {
 });
 
 app.post('/api/user', (req, res) => {
+  checkPlanExpirations();
   const userId = Number(req.body.id);
   const user = db.users.find(u => u.id === userId);
   const teamCount = getUserTeamCount(user);
@@ -1051,7 +1070,6 @@ app.post('/api/deposit', (req, res) => {
   const user = db.users.find(u => u.id === Number(userId));
   const p = db.plans.find(x => x.id === Number(planId)) || db.plans[0];
   
-  // Check automatic invite unlock condition for VIP 5 and VIP 6
   const teamCount = getUserTeamCount(user);
   if (p.reqInvites && teamCount < p.reqInvites) {
     return res.send({ ok: false, msg: '🔒 This tier is locked! You need at least ' + p.reqInvites + ' active team invites to deposit in ' + p.name + '. Your current active invites: ' + teamCount });
@@ -1068,7 +1086,7 @@ app.post('/api/deposit', (req, res) => {
     status: 'Pending'
   });
   saveDB();
-  res.send({ ok: true, msg: 'Payment Screenshot uploaded successfully! Once verified by Admin, your 10% daily ROI will start automatically.' });
+  res.send({ ok: true, msg: 'Payment Screenshot uploaded successfully! Once verified by Admin, your daily ROI will start automatically.' });
 });
 
 app.post('/api/withdraw', (req, res) => {
@@ -1094,21 +1112,23 @@ app.post('/api/withdraw', (req, res) => {
 });
 
 app.post('/api/claim', (req, res) => {
+  checkPlanExpirations();
   const user = db.users.find(u => u.id === Number(req.body.userId));
-  if(!user || !user.activePlan) return res.send({ ok: false, msg: 'No active VIP plan found! Please deposit via NayaPay to activate a tier.' });
+  if(!user || !user.activePlan) return res.send({ ok: false, msg: 'No active VIP plan found or your plan has expired! Please deposit via NayaPay to activate a new tier.' });
   
   const now = Date.now();
   const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
   if(user.lastClaimTime && (now - user.lastClaimTime < TWENTY_FOUR_HOURS)) {
     const hoursLeft = Math.ceil((TWENTY_FOUR_HOURS - (now - user.lastClaimTime)) / (1000 * 60 * 60));
-    return res.send({ ok: false, msg: 'Your 10% Daily ROI is auto-credited every 24 hours! Next automatic credit in ' + hoursLeft + ' hour(s).' });
+    return res.send({ ok: false, msg: 'Your Daily ROI is auto-credited every 24 hours! Next automatic credit in ' + hoursLeft + ' hour(s).' });
   }
 
   creditUserROI(user);
-  res.send({ ok: true, msg: '10% Daily ROI (Rs. ' + user.activePlan.daily + ') successfully added to your wallet!' });
+  res.send({ ok: true, msg: 'Daily ROI (Rs. ' + user.activePlan.daily + ') successfully added to your wallet!' });
 });
 
 app.post('/api/admin/data', (req, res) => {
+  checkPlanExpirations();
   const usersWithTeam = db.users.map(u => ({
     ...u,
     teamCount: getUserTeamCount(u)
@@ -1138,6 +1158,7 @@ app.post('/api/admin/deposit', (req, res) => {
 
         const hadPlanBefore = u.activePlan !== null;
         u.activePlan = p;
+        u.planStartTime = Date.now();
         u.lastClaimTime = Date.now();
 
         if (!hadPlanBefore && u.referredBy) {
@@ -1185,11 +1206,13 @@ app.post('/api/admin/plan', (req, res) => {
   if(u) {
     if (Number(planId) === 0) {
       u.activePlan = null;
+      u.planStartTime = null;
       u.lastClaimTime = null;
     } else {
       const p = db.plans.find(x => x.id === Number(planId));
       if (p) {
         u.activePlan = p;
+        u.planStartTime = Date.now();
         u.lastClaimTime = Date.now();
       }
     }
