@@ -453,7 +453,7 @@ app.get('/', (req, res) => {
                 </div>
               \` : ''}
 
-              <!-- UPDATED LUCKY SPIN BOX (WIN 5 UPTO 500 WITH AMOUNTS: 5, 20, 100, 200, 250, 500) -->
+              <!-- CLEAN LUCKY SPIN BOX (WIN RS 5 UPTO RS 500) -->
               <div class="glass-card px-3.5 py-2.5 rounded-2xl border border-amber-400/40 flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
                   <div class="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400 text-sm border border-amber-500/40">
@@ -461,7 +461,7 @@ app.get('/', (req, res) => {
                   </div>
                   <div>
                     <h4 class="font-black text-xs text-amber-300">Lucky Spin Wheel</h4>
-                    <p id="spinResultText" class="text-[10px] text-slate-300">Win 5 Upto 500 (Rs. 5, 20, 100, 200, 250, 500)</p>
+                    <p id="spinResultText" class="text-[10px] text-slate-300">Win Rs 5 Upto Rs 500</p>
                   </div>
                 </div>
                 <button onclick="triggerLuckySpin()" id="spinBtn" class="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black px-3 py-1.5 rounded-xl text-[10px] uppercase shadow-md hover:brightness-110 transition shrink-0">
@@ -469,11 +469,11 @@ app.get('/', (req, res) => {
                 </button>
               </div>
 
-              <!-- FRONT & CENTER: VIP Investment Tiers -->
+              <!-- FRONT & CENTER: VIP Investment Tiers (Clean Header) -->
               <div>
                 <div class="flex justify-between items-center mb-2">
                   <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <i class="fab fa-bitcoin text-base"></i> VIP Mining Tiers (Front-View)
+                    <i class="fab fa-bitcoin text-base"></i> VIP Mining Tiers
                   </h3>
                   <span class="text-[9px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-500/30">Invites: \${userTeamCount}</span>
                 </div>
@@ -600,7 +600,7 @@ app.get('/', (req, res) => {
               alert(res.msg);
               renderDashboard();
             } else {
-              txt.innerText = 'Win 5 Upto 500 (Rs. 5, 20, 100...)';
+              txt.innerText = 'Win Rs 5 Upto Rs 500';
               alert(res.msg);
               if(btn) btn.disabled = false;
             }
@@ -731,7 +731,6 @@ app.get('/', (req, res) => {
           alert(res.msg); renderDashboard();
         }
 
-        // --- ADMIN PANEL WITH P&L AND USER ID SEARCH ---
         async function renderAdmin() {
           const res = await api('/api/admin/data', {});
           const stats = res.stats || { totalDeposits: 0, totalWithdrawals: 0, netProfit: 0 };
@@ -942,7 +941,6 @@ app.post('/api/user', (req, res) => {
   res.send({ user, plans: db.plans, teamCount, deposits, withdrawals });
 });
 
-// LUCKY SPIN API (Random amount from 5 to 500, weighted towards 5 and 20)
 app.post('/api/spin', (req, res) => {
   const userId = Number(req.body.userId);
   const user = db.users.find(u => u.id === userId);
@@ -955,7 +953,6 @@ app.post('/api/spin', (req, res) => {
     return res.send({ ok: false, msg: '⏳ You have already used your free spin today! Come back in ' + hoursLeft + ' hour(s).' });
   }
 
-  // Random amount logic: mostly 5 or 20, sometimes 100, 200, 250, 500
   const prizePool = [5, 5, 5, 20, 20, 100, 200, 250, 500];
   const wonAmount = prizePool[Math.floor(Math.random() * prizePool.length)];
 
