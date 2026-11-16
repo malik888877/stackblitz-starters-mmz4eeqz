@@ -3,10 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const app = express();
 
-// Increased limit to 15MB so users can easily upload payment screenshots
 app.use(express.json({ limit: '15mb' }));
 
-// Permanent Storage Setup (Automatically uses Railway Volume /app/data)
 const DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) {
   try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) {}
@@ -24,7 +22,6 @@ const PLANS = [
 
 const nowTime = Date.now();
 
-// Pre-loaded 33 Active Users (Updated Backup)
 const INITIAL_USERS = [
   { id: 370019, name: 'Malik', phone: '03074532161', pass: null, balance: 5513, activePlan: PLANS[4], planStartTime: nowTime, lastClaimTime: nowTime, lastSpinTime: 0, referredBy: null, refEarnings: 0, customTeamCount: 24, isAdmin: false },
   { id: 752498, name: 'Hamza', phone: '03146317272', pass: null, balance: 25640, activePlan: PLANS[3], planStartTime: nowTime, lastClaimTime: nowTime, lastSpinTime: 0, referredBy: null, refEarnings: 0, customTeamCount: 16, isAdmin: false },
@@ -68,7 +65,6 @@ let db = {
   withdrawals: []
 };
 
-// Load saved database from Railway Volume so NO users or transaction history are ever lost
 if (fs.existsSync(DB_FILE)) {
   try {
     const saved = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
@@ -99,7 +95,6 @@ function saveDB() {
   }
 }
 
-// Automatic Plan Expiry Check
 function checkPlanExpirations() {
   const now = Date.now();
   let changed = false;
@@ -207,37 +202,27 @@ app.get('/', (req, res) => {
         }
         @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         .animate-ticker { display: inline-block; white-space: nowrap; animation: ticker 22s linear infinite; }
-        @keyframes pulseGlow { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.65; transform: scale(1.12); } }
-        .animate-glow { animation: pulseGlow 6s ease-in-out infinite; }
       </style>
     </head>
     <body class="text-slate-100 font-sans min-h-screen flex flex-col justify-between relative">
-      
       <canvas id="cryptoCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
       <div class="cyber-grid"></div>
 
-      <div class="fixed top-10 left-1/4 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none animate-glow z-0"></div>
-      <div class="fixed bottom-10 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl pointer-events-none animate-glow z-0"></div>
-
-      <!-- Top Live Crypto & Payout Ticker -->
       <div class="w-full bg-slate-950/90 border-b border-amber-500/30 py-1.5 overflow-hidden z-20 sticky top-0 backdrop-blur-md">
         <div class="animate-ticker text-[11px] font-bold tracking-wider text-amber-300">
           <span class="mx-4"><i class="fab fa-bitcoin text-amber-400 mr-1"></i> BTC/USDT AI-Node: <span class="text-emerald-400">+10.0% Daily Yield Active</span></span>
           <span class="mx-4">⚡ VIP #370019 won <span class="text-amber-400">Rs. 5 Daily Lucky Spin Bonus</span></span>
           <span class="mx-4">💸 VIP #752498 withdrew <span class="text-emerald-400">Rs. 4,500</span> via EasyPaisa</span>
-          <span class="mx-4">🔥 VIP #982227 earned <span class="text-amber-400">1% Team Royalty Bonus</span></span>
         </div>
       </div>
 
       <div id="app" class="max-w-md mx-auto w-full p-4 flex-grow z-10 pb-24"></div>
       
-      <!-- Fullscreen Screenshot Viewer Modal -->
       <div id="imgModal" onclick="this.classList.add('hidden')" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-4 cursor-pointer">
         <p class="text-xs text-amber-400 font-bold mb-2 uppercase tracking-wider">Tap anywhere to close</p>
         <img id="imgModalSrc" src="" class="max-h-[85vh] max-w-full rounded-2xl border-2 border-amber-400 shadow-2xl object-contain" />
       </div>
 
-      <!-- Telegram Official Support Floating Button -->
       <a href="https://t.me/VIPEARNPK_SUPPORT" target="_blank" class="fixed bottom-5 right-5 bg-gradient-to-r from-amber-500 via-yellow-500 to-pink-600 hover:brightness-110 text-slate-950 px-5 py-3.5 rounded-full shadow-[0_0_25px_rgba(245,158,11,0.5)] flex items-center gap-2.5 text-xs font-black uppercase tracking-wider z-40 transition transform hover:scale-105 border border-amber-200/60">
         <i class="fab fa-telegram-plane text-xl"></i> VIP Telegram Care
       </a>
@@ -419,80 +404,78 @@ app.get('/', (req, res) => {
           const inviteLink = window.location.origin + '/?ref=' + currentUser.id;
 
           document.getElementById('app').innerHTML = \`
-            <div class="py-2 space-y-4">
+            <div class="py-2 space-y-3">
               <!-- Top Profile Bar -->
-              <div class="flex justify-between items-center glass-card p-3.5 rounded-2xl">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-slate-950 font-black text-lg shadow-lg">
+              <div class="flex justify-between items-center glass-card p-3 rounded-2xl">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-slate-950 font-black text-base shadow-lg">
                     <i class="fab fa-bitcoin"></i>
                   </div>
                   <div>
-                    <span class="text-[10px] uppercase tracking-widest bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-black border border-amber-500/30">VIP NODE #\${currentUser.id}</span>
-                    <h2 class="text-sm font-black text-white mt-0.5">\${currentUser.name}</h2>
+                    <span class="text-[9px] uppercase tracking-widest bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-black border border-amber-500/30">VIP NODE #\${currentUser.id}</span>
+                    <h2 class="text-xs font-black text-white mt-0.5">\${currentUser.name}</h2>
                   </div>
                 </div>
-                <button onclick="logout()" class="bg-rose-500/15 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-rose-500 hover:text-white transition">Logout</button>
+                <button onclick="logout()" class="bg-rose-500/15 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-xl text-[11px] font-bold hover:bg-rose-500 hover:text-white transition">Logout</button>
               </div>
 
               <!-- Futuristic Main Portfolio Card -->
-              <div class="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-600 p-5 rounded-3xl shadow-[0_0_35px_rgba(245,158,11,0.35)] text-slate-950 relative overflow-hidden border border-yellow-200/50">
-                <div class="absolute -right-6 -bottom-6 text-slate-950/15 text-8xl font-black pointer-events-none"><i class="fab fa-bitcoin fa-spin" style="animation-duration: 25s;"></i></div>
+              <div class="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-600 p-4 rounded-3xl shadow-[0_0_30px_rgba(245,158,11,0.3)] text-slate-950 relative overflow-hidden border border-yellow-200/50">
+                <div class="absolute -right-6 -bottom-6 text-slate-950/15 text-7xl font-black pointer-events-none"><i class="fab fa-bitcoin"></i></div>
                 <div class="flex justify-between items-start relative z-10">
                   <div>
-                    <p class="text-[11px] uppercase font-black tracking-widest opacity-80 flex items-center gap-1"><i class="fas fa-shield-alt"></i> Total Vault Balance</p>
-                    <h1 class="text-3xl font-black mt-0.5">Rs. \${Number(currentUser.balance).toLocaleString()}</h1>
+                    <p class="text-[10px] uppercase font-black tracking-widest opacity-80 flex items-center gap-1"><i class="fas fa-shield-alt"></i> Total Vault Balance</p>
+                    <h1 class="text-2xl font-black mt-0.5">Rs. \${Number(currentUser.balance).toLocaleString()}</h1>
                   </div>
-                  <span class="bg-slate-950 text-amber-400 text-[10px] font-black px-2.5 py-1 rounded-full uppercase shadow-md border border-amber-400/40">⚡ 10% Daily ROI</span>
+                  <span class="bg-slate-950 text-amber-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase shadow-md border border-amber-400/40">⚡ 10% Daily ROI</span>
                 </div>
-                <div class="mt-4 grid grid-cols-3 gap-2 relative z-10">
-                  <button onclick="claimDaily()" class="bg-slate-950 text-amber-400 font-extrabold py-2.5 px-2 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1 border border-amber-400/40">
-                    <i class="fas fa-bolt text-yellow-400"></i> Collect ROI
+                <div class="mt-3 grid grid-cols-3 gap-2 relative z-10">
+                  <button onclick="claimDaily()" class="bg-slate-950 text-amber-400 font-extrabold py-2 px-1 rounded-xl text-[11px] shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1 border border-amber-400/40">
+                    <i class="fas fa-bolt text-yellow-400"></i> Collect
                   </button>
-                  <button onclick="renderDepositModal(2)" class="bg-emerald-600 text-white font-extrabold py-2.5 px-2 rounded-xl text-xs shadow-xl hover:bg-emerald-500 transition flex items-center justify-center gap-1 border border-emerald-300/40">
+                  <button onclick="renderDepositModal(2)" class="bg-emerald-600 text-white font-extrabold py-2 px-1 rounded-xl text-[11px] shadow-xl hover:bg-emerald-500 transition flex items-center justify-center gap-1 border border-emerald-300/40">
                     <i class="fas fa-plus-circle"></i> Deposit
                   </button>
-                  <button onclick="renderWithdrawModal()" class="bg-slate-950 text-rose-400 font-extrabold py-2.5 px-2 rounded-xl text-xs shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1 border border-rose-500/40">
+                  <button onclick="renderWithdrawModal()" class="bg-slate-950 text-rose-400 font-extrabold py-2 px-1 rounded-xl text-[11px] shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-1 border border-rose-500/40">
                     <i class="fas fa-money-bill-wave"></i> Withdraw
                   </button>
                 </div>
               </div>
 
-              <!-- DAILY CRYPTO LUCKY SPIN FEATURE -->
-              <div class="glass-card p-4 rounded-3xl border border-amber-400/50 relative overflow-hidden text-center">
-                <div class="absolute top-0 right-0 bg-amber-500 text-slate-950 text-[9px] font-black uppercase px-2.5 py-0.5 rounded-bl-lg">🎁 FREE DAILY REWARD</div>
-                <h3 class="font-black text-sm text-amber-300 flex items-center justify-center gap-1.5"><i class="fas fa-dharmachakra fa-spin text-amber-400"></i> Crypto Lucky Spin Wheel</h3>
-                <p class="text-[11px] text-slate-300 mt-0.5">Spin daily to win free bonus cash directly added to your vault balance!</p>
-                
-                <div id="spinBoxContainer" class="my-3 py-4 bg-slate-950/90 rounded-2xl border border-amber-500/30 relative">
-                  <div id="spinResultText" class="text-xl font-black text-amber-400 tracking-wider">🎯 WIN UP TO RS. 5,000</div>
-                  <p class="text-[10px] text-slate-400 mt-1">Prizes: Rs. 5, Rs. 50, Rs. 500, iPhone 16 Pro</p>
+              <!-- SLIM & COMPACT ACTIVE PLAN BANNER -->
+              \${currentUser.activePlan ? \`
+                <div class="glass-card px-3.5 py-2.5 rounded-2xl border border-emerald-400/60 flex items-center justify-between relative overflow-hidden">
+                  <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[8px] font-black uppercase px-2 py-0.5 rounded-bl-lg">⚡ ACTIVE</div>
+                  <div>
+                    <h4 class="font-black text-xs text-amber-300"><i class="fas fa-crown text-emerald-400 mr-1"></i>\${currentUser.activePlan.name}</h4>
+                    <p class="text-[10px] text-emerald-400 font-bold mt-0.5">Daily: Rs. \${currentUser.activePlan.daily} | Valid: \${currentUser.activePlan.days} Days</p>
+                  </div>
                 </div>
+              \` : ''}
 
-                <button onclick="triggerLuckySpin()" id="spinBtn" class="w-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black py-2.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:brightness-110 transition">
-                  <i class="fas fa-play-circle mr-1"></i> Spin Wheel Now (Free)
+              <!-- SLIM & COMPACT LUCKY SPIN BOX -->
+              <div class="glass-card px-3.5 py-2.5 rounded-2xl border border-amber-400/40 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400 text-sm border border-amber-500/40">
+                    <i class="fas fa-dharmachakra fa-spin text-amber-400"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-black text-xs text-amber-300">Daily Lucky Spin</h4>
+                    <p id="spinResultText" class="text-[10px] text-slate-300">Win Free Rs. 5 Daily Cash</p>
+                  </div>
+                </div>
+                <button onclick="triggerLuckySpin()" id="spinBtn" class="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black px-3 py-1.5 rounded-xl text-[10px] uppercase shadow-md hover:brightness-110 transition shrink-0">
+                  Spin Now
                 </button>
               </div>
 
-              <!-- Active Membership Banner -->
-              \${currentUser.activePlan ? \`
-                <div class="glass-card p-4 rounded-2xl border-2 border-emerald-400/70 relative overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                  <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-3 py-0.5 rounded-bl-xl">⚡ ACTIVE PLAN</div>
-                  <h3 class="font-black text-base text-amber-300 flex items-center gap-1.5"><i class="fas fa-crown text-emerald-400"></i> \${currentUser.activePlan.name}</h3>
-                  <p class="text-xs text-emerald-400 mt-1 font-bold"><i class="fas fa-sync-alt fa-spin mr-1"></i> Auto-Crediting 10% ROI: Rs. \${currentUser.activePlan.daily} Every 24 Hours (\${currentUser.activePlan.days} Days Active Plan)</p>
-                </div>
-              \` : \`
-                <div class="glass-card p-3 rounded-2xl border border-amber-400/50 text-center bg-amber-500/10">
-                  <p class="text-xs text-amber-300 font-bold"><i class="fas fa-rocket mr-1"></i> Select & Activate a VIP Tier below to start earning 10% daily profit!</p>
-                </div>
-              \`}
-
-              <!-- VIP Investment Tiers -->
+              <!-- FRONT & CENTER: VIP Investment Tiers -->
               <div>
-                <div class="flex justify-between items-center mb-2.5">
+                <div class="flex justify-between items-center mb-2">
                   <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <i class="fab fa-bitcoin text-base"></i> VIP Mining Tiers (30 Days & 20 Days Active)
+                    <i class="fab fa-bitcoin text-base"></i> VIP Mining Tiers (Front-View)
                   </h3>
-                  <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-500/30">Your Invites: \${userTeamCount}</span>
+                  <span class="text-[9px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-500/30">Invites: \${userTeamCount}</span>
                 </div>
                 <div class="grid grid-cols-2 gap-2.5">
                   \${plans.map(p => {
@@ -501,26 +484,26 @@ app.get('/', (req, res) => {
                     const isLocked = userTeamCount < reqInv;
 
                     return \`
-                      <div class="glass-card p-3.5 rounded-2xl flex flex-col justify-between relative overflow-hidden transition \${isCurrent ? 'border-2 border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.25)]' : isLocked ? 'opacity-75 border-rose-500/40 bg-slate-950/90' : 'hover:border-amber-400'}">
-                        \${isCurrent ? '<div class="bg-emerald-500 text-slate-950 text-[9px] font-black uppercase px-2 py-0.5 rounded-bl-lg absolute top-0 right-0">⚡ ACTIVE</div>' : ''}
-                        \${isLocked ? '<div class="bg-rose-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-bl-lg absolute top-0 right-0">🔒 LOCKED</div>' : ''}
+                      <div class="glass-card p-3 rounded-2xl flex flex-col justify-between relative overflow-hidden transition \${isCurrent ? 'border-2 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : isLocked ? 'opacity-75 border-rose-500/40 bg-slate-950/90' : 'hover:border-amber-400'}">
+                        \${isCurrent ? '<div class="bg-emerald-500 text-slate-950 text-[8px] font-black uppercase px-2 py-0.5 rounded-bl-lg absolute top-0 right-0">⚡ ACTIVE</div>' : ''}
+                        \${isLocked ? '<div class="bg-rose-600 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-bl-lg absolute top-0 right-0">🔒 LOCKED</div>' : ''}
                         
                         <div>
                           <div class="flex justify-between items-center">
-                            <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VIP \${p.id}</span>
-                            <span class="text-[10px] font-bold text-sky-300 bg-sky-950/80 px-2 py-0.5 rounded-full border border-sky-500/30">\${p.days} Days Active</span>
+                            <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VIP \${p.id}</span>
+                            <span class="text-[9px] font-bold text-sky-300 bg-sky-950/80 px-1.5 py-0.5 rounded border border-sky-500/30">\${p.days} Days</span>
                           </div>
-                          <h4 class="font-black text-white text-xs mt-1.5 truncate">\${p.name.replace('VIP ' + p.id + ' - ', '')}</h4>
-                          <p class="text-base font-black text-amber-400 mt-1">Rs. \${p.price.toLocaleString()}</p>
-                          <p class="text-[11px] text-emerald-400 font-bold mt-0.5"><i class="fas fa-arrow-trend-up mr-1"></i>Daily: Rs. \${p.daily.toLocaleString()}</p>
+                          <h4 class="font-black text-white text-[11px] mt-1 truncate">\${p.name.replace('VIP ' + p.id + ' - ', '')}</h4>
+                          <p class="text-sm font-black text-amber-400 mt-0.5">Rs. \${p.price.toLocaleString()}</p>
+                          <p class="text-[10px] text-emerald-400 font-bold"><i class="fas fa-arrow-trend-up mr-0.5"></i>Daily: Rs. \${p.daily.toLocaleString()}</p>
                           
-                          <div class="mt-2 pt-2 border-t border-slate-800 text-[10px] font-bold \${reqInv > 0 ? (userTeamCount >= reqInv ? 'text-emerald-400' : 'text-rose-400') : 'text-amber-300'}">
-                            \${reqInv > 0 ? (userTeamCount >= reqInv ? '<i class="fas fa-check-circle mr-1"></i>Unlocked (' + reqInv + ' Invites Done)' : '<i class="fas fa-lock mr-1"></i>Need ' + (reqInv - userTeamCount) + ' more invites (Req: ' + reqInv + ')') : '<i class="fas fa-bolt mr-1"></i>Active for ' + p.days + ' Days'}
+                          <div class="mt-1.5 pt-1.5 border-t border-slate-800 text-[9px] font-bold \${reqInv > 0 ? (userTeamCount >= reqInv ? 'text-emerald-400' : 'text-rose-400') : 'text-amber-300'}">
+                            \${reqInv > 0 ? (userTeamCount >= reqInv ? '✓ Unlocked (' + reqInv + ' Invites)' : '🔒 Need ' + (reqInv - userTeamCount) + ' Invites') : '⚡ Active Plan'}
                           </div>
                         </div>
 
-                        <button onclick="\${isLocked ? 'alert(\\'🔒 VIP ' + p.id + ' is locked! You need at least ' + reqInv + ' active team invites with a deposit to unlock this tier. Your current active invites: ' + userTeamCount + '\\')' : 'renderDepositModal(' + p.id + ')'}" class="mt-3 w-full \${isCurrent ? 'bg-emerald-500 text-slate-950' : isLocked ? 'bg-slate-800 text-slate-400 cursor-not-allowed border border-rose-500/40' : 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950'} font-black py-2 rounded-xl text-[11px] uppercase tracking-wider shadow-md transition">
-                          \${isCurrent ? 'Upgrade / Renew' : isLocked ? '🔒 Locked (' + userTeamCount + '/' + reqInv + ')' : 'Activate Now'}
+                        <button onclick="\${isLocked ? 'alert(\\'🔒 VIP ' + p.id + ' is locked! You need at least ' + reqInv + ' active team invites with a deposit to unlock this tier. Your current active invites: ' + userTeamCount + '\\')' : 'renderDepositModal(' + p.id + ')'}" class="mt-2.5 w-full \${isCurrent ? 'bg-emerald-500 text-slate-950' : isLocked ? 'bg-slate-800 text-slate-400 cursor-not-allowed border border-rose-500/40' : 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950'} font-black py-1.5 rounded-xl text-[10px] uppercase tracking-wider shadow transition">
+                          \${isCurrent ? 'Renew' : isLocked ? 'Locked' : 'Activate'}
                         </button>
                       </div>
                     \`;
@@ -529,64 +512,64 @@ app.get('/', (req, res) => {
               </div>
 
               <!-- Invite & Earn 1% Daily Banner -->
-              <div class="glass-card p-5 rounded-3xl border border-amber-400/40 relative overflow-hidden">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 text-[10px] font-black uppercase px-2.5 py-1 rounded-full">🔥 Viral Team Syndicate</span>
-                  <span class="text-xs font-black text-emerald-400">Daily 1% Deposit Bonus</span>
+              <div class="glass-card p-4 rounded-3xl border border-amber-400/40 relative overflow-hidden">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 text-[9px] font-black uppercase px-2 py-0.5 rounded-full">🔥 Viral Team Syndicate</span>
+                  <span class="text-[10px] font-black text-emerald-400">Daily 1% Deposit Bonus</span>
                 </div>
-                <h3 class="text-base font-black text-white mt-1">Invite Friends & Unlock VIP 5 & VIP 6!</h3>
-                <p class="text-xs text-slate-300 mt-1 leading-relaxed">
-                  Share your unique referral link below! Get <span class="text-amber-400 font-bold">1% of your friend's total deposit</span> every day! Plus, bringing <span class="text-emerald-400 font-bold">3 active invites</span> unlocks VIP 5 (Rs. 15,000 - 20 Days Active), and <span class="text-emerald-400 font-bold">5 active invites</span> unlocks VIP 6 (Rs. 50,000 - 20 Days Active)!
+                <h3 class="text-xs font-black text-white">Invite Friends & Unlock VIP 5 & VIP 6!</h3>
+                <p class="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                  Share your unique link below! Get <span class="text-amber-400 font-bold">1% of your friend's total deposit</span> every day! 3 invites unlock VIP 5, and 5 invites unlock VIP 6!
                 </p>
 
-                <div class="grid grid-cols-2 gap-2.5 my-3">
-                  <div class="bg-slate-950/90 p-3 rounded-xl border border-amber-500/20 text-center">
-                    <p class="text-[10px] uppercase text-slate-400 font-bold">Active Team Invites</p>
-                    <p class="text-lg font-black text-amber-400 mt-0.5">\${userTeamCount} Invites</p>
+                <div class="grid grid-cols-2 gap-2 my-2.5">
+                  <div class="bg-slate-950/90 p-2.5 rounded-xl border border-amber-500/20 text-center">
+                    <p class="text-[9px] uppercase text-slate-400 font-bold">Active Invites</p>
+                    <p class="text-base font-black text-amber-400 mt-0.5">\${userTeamCount}</p>
                   </div>
-                  <div class="bg-slate-950/90 p-3 rounded-xl border border-emerald-500/20 text-center">
-                    <p class="text-[10px] uppercase text-slate-400 font-bold">1% Referral Bonus</p>
-                    <p class="text-lg font-black text-emerald-400 mt-0.5">Rs. \${Number(currentUser.refEarnings || 0).toLocaleString()}</p>
+                  <div class="bg-slate-950/90 p-2.5 rounded-xl border border-emerald-500/20 text-center">
+                    <p class="text-[9px] uppercase text-slate-400 font-bold">1% Ref Bonus</p>
+                    <p class="text-base font-black text-emerald-400 mt-0.5">Rs. \${Number(currentUser.refEarnings || 0).toLocaleString()}</p>
                   </div>
                 </div>
 
                 <div class="flex items-center gap-2 bg-slate-950 p-2 rounded-xl border border-amber-500/40">
-                  <input type="text" readonly value="\${inviteLink}" class="bg-transparent text-[11px] text-amber-200 w-full px-2 focus:outline-none font-mono">
-                  <button onclick="copyText('\${inviteLink}', 'Referral Link')" class="bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 font-black px-3.5 py-2 rounded-lg text-xs uppercase shrink-0 transition">
-                    <i class="fas fa-copy mr-1"></i> Copy Link
+                  <input type="text" readonly value="\${inviteLink}" class="bg-transparent text-[10px] text-amber-200 w-full px-1 focus:outline-none font-mono">
+                  <button onclick="copyText('\${inviteLink}', 'Referral Link')" class="bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 font-black px-3 py-1.5 rounded-lg text-[10px] uppercase shrink-0 transition">
+                    <i class="fas fa-copy mr-1"></i> Copy
                   </button>
                 </div>
               </div>
 
               <!-- Deposit & Withdrawal History -->
-              <div class="space-y-4">
-                <div class="glass-card p-4 rounded-2xl">
-                  <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider mb-3"><i class="fas fa-history mr-1"></i> Deposit History</h3>
-                  <div class="space-y-2 max-h-40 overflow-y-auto">
+              <div class="space-y-3">
+                <div class="glass-card p-3.5 rounded-2xl">
+                  <h3 class="text-[11px] font-black text-amber-400 uppercase tracking-wider mb-2.5"><i class="fas fa-history mr-1"></i> Deposit History</h3>
+                  <div class="space-y-2 max-h-36 overflow-y-auto">
                     \${userDeposits.length === 0 ? '<p class="text-[11px] text-slate-500 italic">No deposit records found.</p>' : ''}
                     \${userDeposits.map(d => \`
-                      <div class="bg-slate-950/90 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-[11px]">
+                      <div class="bg-slate-950/90 p-2 rounded-xl border border-slate-800 flex justify-between items-center text-[11px]">
                         <div>
                           <p class="font-bold text-white">\${d.planName} (Rs. \${d.amount})</p>
-                          <p class="text-emerald-400 text-[10px]"><i class="fas fa-image mr-1"></i>Payment Screenshot Uploaded</p>
+                          <p class="text-emerald-400 text-[9px]">Screenshot Uploaded</p>
                         </div>
-                        <span class="px-2 py-0.5 rounded font-bold uppercase text-[10px] \${d.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : d.status === 'Rejected' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">\${d.status}</span>
+                        <span class="px-2 py-0.5 rounded font-bold uppercase text-[9px] \${d.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : d.status === 'Rejected' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">\${d.status}</span>
                       </div>
                     \`).join('')}
                   </div>
                 </div>
 
-                <div class="glass-card p-4 rounded-2xl">
-                  <h3 class="text-xs font-black text-rose-400 uppercase tracking-wider mb-3"><i class="fas fa-wallet mr-1"></i> Withdrawal History</h3>
-                  <div class="space-y-2 max-h-40 overflow-y-auto">
+                <div class="glass-card p-3.5 rounded-2xl">
+                  <h3 class="text-[11px] font-black text-rose-400 uppercase tracking-wider mb-2.5"><i class="fas fa-wallet mr-1"></i> Withdrawal History</h3>
+                  <div class="space-y-2 max-h-36 overflow-y-auto">
                     \${userWithdrawals.length === 0 ? '<p class="text-[11px] text-slate-500 italic">No withdrawal records found.</p>' : ''}
                     \${userWithdrawals.map(w => \`
-                      <div class="bg-slate-950/90 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-[11px]">
+                      <div class="bg-slate-950/90 p-2 rounded-xl border border-slate-800 flex justify-between items-center text-[11px]">
                         <div>
                           <p class="font-bold text-white">Rs. \${w.amount} (\${w.method})</p>
                           <p class="text-slate-400 font-mono">\${w.account}</p>
                         </div>
-                        <span class="px-2 py-0.5 rounded font-bold uppercase text-[10px] \${w.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : w.status === 'Rejected' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">\${w.status}</span>
+                        <span class="px-2 py-0.5 rounded font-bold uppercase text-[9px] \${w.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : w.status === 'Rejected' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">\${w.status}</span>
                       </div>
                     \`).join('')}
                   </div>
@@ -605,7 +588,7 @@ app.get('/', (req, res) => {
           const fakePrizes = ['Rs. 5,000', 'iPhone 16', 'Rs. 500', 'Rs. 50', 'Rs. 1,000'];
           
           const interval = setInterval(() => {
-            txt.innerText = '🌀 Spinning... ' + fakePrizes[counter % fakePrizes.length];
+            txt.innerText = '🌀 ' + fakePrizes[counter % fakePrizes.length];
             counter++;
           }, 100);
 
@@ -613,11 +596,11 @@ app.get('/', (req, res) => {
             clearInterval(interval);
             const res = await api('/api/spin', { userId: currentUser.id });
             if(res.ok) {
-              txt.innerText = '🎉 WON RS. 5 FREE BONUS!';
+              txt.innerText = '🎉 Won Rs. 5 Bonus!';
               alert(res.msg);
               renderDashboard();
             } else {
-              txt.innerText = '🎯 WIN UP TO RS. 5,000';
+              txt.innerText = 'Win Free Rs. 5 Daily Cash';
               alert(res.msg);
               if(btn) btn.disabled = false;
             }
@@ -652,21 +635,9 @@ app.get('/', (req, res) => {
                     </div>
                     <button type="button" onclick="copyText('03256098796', 'NayaPay Account Number')" class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1.5 rounded-lg text-xs font-bold">Copy</button>
                   </div>
-
-                  <div class="flex justify-between items-center bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
-                    <div class="overflow-hidden pr-2">
-                      <p class="text-[10px] text-slate-400 uppercase font-bold">NayaPay IBAN Number</p>
-                      <p class="text-xs font-black text-emerald-300 font-mono truncate">PK49NAYA1234503256098796</p>
-                    </div>
-                    <button type="button" onclick="copyText('PK49NAYA1234503256098796', 'NayaPay IBAN')" class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-3 py-1.5 rounded-lg text-xs font-bold shrink-0">Copy</button>
-                  </div>
                 </div>
 
                 <form onsubmit="submitDeposit(event)" class="space-y-4">
-                  <div>
-                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Payment Method</label>
-                    <input type="text" id="depMethod" value="NayaPay" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-emerald-400 font-bold text-xs focus:outline-none">
-                  </div>
                   <div>
                     <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Select VIP Membership Tier</label>
                     <select id="depPlan" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-amber-400">
@@ -684,16 +655,15 @@ app.get('/', (req, res) => {
                       <div class="flex flex-col items-center justify-center pt-5 pb-6 text-center px-3">
                         <i class="fas fa-cloud-upload-alt text-3xl text-amber-400 mb-2"></i>
                         <p class="text-xs text-slate-200 font-bold">Tap here to select NayaPay Screenshot</p>
-                        <p class="text-[10px] text-slate-500 mt-1">Supports JPG, PNG, JPEG</p>
                       </div>
                       <input type="file" id="depScreenshot" accept="image/*" required onchange="handleScreenshotSelect(event)" class="hidden" />
                     </label>
                     <div id="ssPreviewContainer" class="hidden mt-3 text-center bg-slate-950 p-2.5 rounded-xl border border-emerald-500/40">
-                      <p class="text-[10px] text-emerald-400 font-bold uppercase mb-1.5"><i class="fas fa-check-circle mr-1"></i> Screenshot Attached Successfully</p>
-                      <img id="ssPreview" src="" class="max-h-44 mx-auto rounded-lg border border-slate-800 object-contain" />
+                      <p class="text-[10px] text-emerald-400 font-bold uppercase mb-1.5"><i class="fas fa-check-circle mr-1"></i> Screenshot Attached</p>
+                      <img id="ssPreview" src="" class="max-h-40 mx-auto rounded-lg border border-slate-800 object-contain" />
                     </div>
                   </div>
-                  <button type="submit" id="depSubmitBtn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 text-slate-950 font-black py-3.5 rounded-xl uppercase tracking-wider text-xs shadow-lg transition">Submit Screenshot for Activation</button>
+                  <button type="submit" id="depSubmitBtn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 text-slate-950 font-black py-3.5 rounded-xl uppercase tracking-wider text-xs shadow-lg transition">Submit Screenshot</button>
                 </form>
               </div>
             </div>
@@ -708,16 +678,14 @@ app.get('/', (req, res) => {
                   <h2 class="text-lg font-black text-rose-400"><i class="fas fa-wallet mr-1"></i> Instant Withdrawal</h2>
                   <button onclick="renderDashboard()" class="text-slate-400 hover:text-white font-bold text-sm"><i class="fas fa-times text-lg"></i></button>
                 </div>
-
                 <div class="bg-slate-950 p-3.5 rounded-2xl border border-rose-500/30 mb-4 flex justify-between items-center">
                   <span class="text-xs text-slate-400">Available Balance:</span>
                   <span class="text-base font-black text-amber-400">Rs. \${Number(currentUser.balance).toLocaleString()}</span>
                 </div>
-
                 <form onsubmit="submitWithdraw(event)" class="space-y-4">
                   <div>
                     <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Receive Method</label>
-                    <select id="wMethod" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-rose-400">
+                    <select id="wMethod" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none">
                       <option value="NayaPay">NayaPay</option>
                       <option value="EasyPaisa">EasyPaisa</option>
                       <option value="JazzCash">JazzCash</option>
@@ -725,11 +693,11 @@ app.get('/', (req, res) => {
                   </div>
                   <div>
                     <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Account Holder Name & Number</label>
-                    <input type="text" id="wAcc" required placeholder="e.g. Ali Khan - 03001234567" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-rose-400">
+                    <input type="text" id="wAcc" required placeholder="e.g. Ali Khan - 03001234567" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none">
                   </div>
                   <div>
-                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Withdrawal Amount (Minimum Rs. 300)</label>
-                    <input type="number" id="wAmount" min="300" step="any" required placeholder="Min Rs. 300" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-rose-400">
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-1">Amount (Min Rs. 300)</label>
+                    <input type="number" id="wAmount" min="300" step="any" required placeholder="Min Rs. 300" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-xs focus:outline-none">
                   </div>
                   <button type="submit" class="w-full bg-rose-500 hover:bg-rose-400 text-white font-black py-3.5 rounded-xl uppercase tracking-wider text-xs shadow-lg transition">Request Payout</button>
                 </form>
@@ -742,7 +710,7 @@ app.get('/', (req, res) => {
           e.preventDefault();
           if (!selectedScreenshotData) { alert('Please select your payment screenshot first!'); return; }
           const btn = document.getElementById('depSubmitBtn');
-          if (btn) { btn.disabled = true; btn.innerText = 'Uploading Screenshot...'; }
+          if (btn) { btn.disabled = true; btn.innerText = 'Uploading...'; }
           const planId = Number(document.getElementById('depPlan').value);
           const res = await api('/api/deposit', { userId: currentUser.id, planId, screenshot: selectedScreenshotData, method: 'NayaPay' });
           alert(res.msg); renderDashboard();
@@ -763,70 +731,115 @@ app.get('/', (req, res) => {
           alert(res.msg); renderDashboard();
         }
 
+        // --- ADMIN PANEL WITH PROFIT/LOSS & USER ID SEARCH ---
         async function renderAdmin() {
           const res = await api('/api/admin/data', {});
+          const stats = res.stats || { totalDeposits: 0, totalWithdrawals: 0, netProfit: 0 };
+          const users = res.users || [];
+
           document.getElementById('app').innerHTML = \`
             <div class="py-6 space-y-6">
               <div class="flex justify-between items-center glass-card border-amber-500/40 p-5 rounded-2xl">
                 <div>
                   <span class="text-[10px] uppercase font-black bg-amber-500 text-slate-950 px-2 py-0.5 rounded">Master Admin</span>
                   <h2 class="text-lg font-black text-amber-400 mt-1">Syndicate Control Panel</h2>
-                  <p class="text-xs text-slate-400">\${currentUser.phone}</p>
                 </div>
                 <button onclick="logout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold">Logout</button>
               </div>
 
-              <!-- Pending Deposits -->
+              <!-- LIVE PROFIT & LOSS LEDGER SUMMARY -->
+              <div class="grid grid-cols-3 gap-2">
+                <div class="glass-card p-3 rounded-2xl border border-emerald-500/30 text-center">
+                  <p class="text-[9px] uppercase text-slate-400 font-bold">Total Inflow</p>
+                  <p class="text-sm font-black text-emerald-400 mt-0.5">Rs. \${stats.totalDeposits.toLocaleString()}</p>
+                </div>
+                <div class="glass-card p-3 rounded-2xl border border-rose-500/30 text-center">
+                  <p class="text-[9px] uppercase text-slate-400 font-bold">Total Payouts</p>
+                  <p class="text-sm font-black text-rose-400 mt-0.5">Rs. \${stats.totalWithdrawals.toLocaleString()}</p>
+                </div>
+                <div class="glass-card p-3 rounded-2xl border \${stats.netProfit >= 0 ? 'border-amber-500/50 bg-amber-500/10' : 'border-rose-500/50 bg-rose-500/10'} text-center">
+                  <p class="text-[9px] uppercase text-amber-300 font-bold">Net P&L Status</p>
+                  <p class="text-sm font-black \${stats.netProfit >= 0 ? 'text-amber-400' : 'text-rose-400'} mt-0.5">Rs. \${stats.netProfit.toLocaleString()}</p>
+                </div>
+              </div>
+
+              <!-- PENDING DEPOSITS -->
               <div class="glass-card p-5 rounded-2xl">
-                <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-clock mr-1"></i> Pending Deposit Approvals</h3>
+                <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-clock mr-1"></i> Pending Deposits</h3>
                 <div class="space-y-3">
                   \${res.deposits.length === 0 ? '<p class="text-xs text-slate-500 italic">No pending deposits.</p>' : ''}
                   \${res.deposits.map(d => \`
                     <div class="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800 space-y-2.5 text-xs">
-                      <div class="flex justify-between items-start">
-                        <div>
-                          <p class="font-bold text-white">User #\${d.userId} | Requested: <span class="text-amber-400">\${d.planName} (Rs. \${d.amount})</span></p>
-                        </div>
-                      </div>
-                      \${d.screenshot ? \`
-                        <div class="bg-slate-900 p-2 rounded-xl border border-slate-800 text-center">
-                          <p class="text-[10px] text-amber-300 font-bold uppercase mb-1">Payment Proof (Tap to zoom)</p>
-                          <img src="\${d.screenshot}" onclick="viewFullImage(this.src)" class="max-h-48 mx-auto rounded-lg cursor-pointer border border-amber-500/30 object-contain" />
-                        </div>
-                      \` : ''}
-                      <div class="pt-2 border-t border-slate-800 flex flex-col gap-2">
-                        <select id="overridePlan_\${d.id}" class="w-full bg-slate-900 border border-amber-500/40 rounded-lg px-2.5 py-2 text-white text-xs">
-                          <option value="1" \${d.planId == 1 ? 'selected' : ''}>VIP 1 - Rs. 500 (30 Days)</option>
-                          <option value="2" \${d.planId == 2 ? 'selected' : ''}>VIP 2 - Rs. 1,500 (30 Days)</option>
-                          <option value="3" \${d.planId == 3 ? 'selected' : ''}>VIP 3 - Rs. 3,000 (30 Days)</option>
-                          <option value="4" \${d.planId == 4 ? 'selected' : ''}>VIP 4 - Rs. 6,000 (20 Days)</option>
-                          <option value="5" \${d.planId == 5 ? 'selected' : ''}>VIP 5 - Rs. 15,000 (20 Days)</option>
-                          <option value="6" \${d.planId == 6 ? 'selected' : ''}>VIP 6 - Rs. 50,000 (20 Days)</option>
+                      <p class="font-bold text-white">User #\${d.userId} | Requested: <span class="text-amber-400">\${d.planName} (Rs. \${d.amount})</span></p>
+                      \${d.screenshot ? \`<img src="\${d.screenshot}" onclick="viewFullImage(this.src)" class="max-h-36 mx-auto rounded-lg cursor-pointer border border-amber-500/30 object-contain" />\` : ''}
+                      <div class="flex gap-2 pt-1">
+                        <select id="overridePlan_\${d.id}" class="bg-slate-900 border border-amber-500/40 rounded-lg px-2 text-white text-xs">
+                          <option value="1">VIP 1</option><option value="2">VIP 2</option><option value="3">VIP 3</option><option value="4">VIP 4</option><option value="5">VIP 5</option><option value="6">VIP 6</option>
                         </select>
-                        <div class="flex gap-2">
-                          <button onclick="approveDeposit(\${d.id}, 'Approved')" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-2 rounded-lg font-black uppercase">Approve</button>
-                          <button onclick="approveDeposit(\${d.id}, 'Rejected')" class="bg-rose-500 hover:bg-rose-400 text-white px-4 py-2 rounded-lg font-black uppercase">Reject</button>
-                        </div>
+                        <button onclick="approveDeposit(\${d.id}, 'Approved')" class="flex-1 bg-emerald-500 text-slate-950 py-1.5 rounded-lg font-black uppercase text-xs">Approve</button>
+                        <button onclick="approveDeposit(\${d.id}, 'Rejected')" class="bg-rose-500 text-white px-3 py-1.5 rounded-lg font-black uppercase text-xs">Reject</button>
                       </div>
                     </div>
                   \`).join('')}
                 </div>
               </div>
 
-              <!-- Pending Withdrawals -->
+              <!-- PENDING WITHDRAWALS -->
               <div class="glass-card p-5 rounded-2xl">
                 <h3 class="text-sm font-black text-rose-400 mb-3 uppercase tracking-wider"><i class="fas fa-money-bill-wave mr-1"></i> Pending Withdrawals</h3>
                 <div class="space-y-3">
                   \${res.withdrawals.length === 0 ? '<p class="text-xs text-slate-500 italic">No pending withdrawals.</p>' : ''}
                   \${res.withdrawals.map(w => \`
-                    <div class="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                    <div class="bg-slate-950/90 p-3 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
                       <div>
                         <p class="font-bold text-white">User #\${w.userId} | <span class="text-rose-400 font-black">Rs. \${w.amount}</span></p>
-                        <p class="text-slate-300 mt-1">\${w.method}: <span class="font-mono text-yellow-300 font-bold">\${w.account}</span></p>
+                        <p class="text-slate-300">\${w.method}: \${w.account}</p>
                       </div>
                       <div class="flex gap-2">
-                        <button onclick="approveWithdraw(\${w.id}, 'Approved')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-3 py-1.5 rounded-lg font-black">Approve</button>
-                        <button onclick="approveWithdraw(\${w.id}, 'Rejected')" class="bg-rose-500 hover:bg-rose-400 text-white px-3 py-1.5 rounded-lg font-black">Reject</button>
+                        <button onclick="approveWithdraw(\${w.id}, 'Approved')" class="bg-emerald-500 text-slate-950 px-3 py-1.5 rounded-lg font-black text-xs">Approve</button>
+                        <button onclick="approveWithdraw(\${w.id}, 'Rejected')" class="bg-rose-500 text-white px-3 py-1.5 rounded-lg font-black text-xs">Reject</button>
+                      </div>
+                    </div>
+                  \`).join('')}
+                </div>
+              </div>
+
+              <!-- SEARCH USERS BY ID & FINANCIAL LEDGER -->
+              <div class="glass-card p-5 rounded-2xl space-y-3">
+                <div class="flex justify-between items-center">
+                  <h3 class="text-sm font-black text-amber-400 uppercase tracking-wider"><i class="fas fa-users mr-1"></i> User Financial Ledger</h3>
+                  <span class="text-xs text-slate-400">Total Users: \${users.length}</span>
+                </div>
+
+                <!-- Search Input Bar -->
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-amber-400"><i class="fas fa-search"></i></span>
+                  <input type="text" id="userSearchInput" oninput="filterAdminUsers()" placeholder="Search by User ID (e.g. 370019) or Name..." class="w-full bg-slate-950 border border-amber-500/40 rounded-xl px-4 py-2.5 pl-10 text-white text-xs focus:outline-none">
+                </div>
+
+                <!-- Users List Container -->
+                <div id="adminUserListContainer" class="space-y-2.5 max-h-96 overflow-y-auto">
+                  \${users.map(u => \`
+                    <div class="admin-user-card bg-slate-950/90 p-3 rounded-xl border border-slate-800 text-xs space-y-2" data-search="\${u.id} \${u.name.toLowerCase()} \${u.phone}">
+                      <div class="flex justify-between items-start">
+                        <div>
+                          <p class="font-black text-white">#\${u.id} \${u.name} <span class="text-amber-300 font-mono">(\${u.phone})</span></p>
+                          <p class="text-amber-400 font-bold mt-0.5">Balance: Rs. \${Number(u.balance).toLocaleString()} | Invites: \${u.teamCount}</p>
+                        </div>
+                        <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">\${u.activePlan ? u.activePlan.name : 'No Active Plan'}</span>
+                      </div>
+
+                      <!-- Individual User P&L Stats -->
+                      <div class="grid grid-cols-2 gap-2 bg-slate-900/80 p-2 rounded-lg text-[11px]">
+                        <div class="text-emerald-400 font-bold">Total Deposited: Rs. \${Number(u.totalDeposited || 0).toLocaleString()}</div>
+                        <div class="text-rose-400 font-bold">Total Withdrawn: Rs. \${Number(u.totalWithdrawn || 0).toLocaleString()}</div>
+                      </div>
+
+                      <div class="grid grid-cols-4 gap-1 pt-1">
+                        <button onclick="editBalance(\${u.id}, \${u.balance})" class="bg-amber-400 text-slate-950 py-1 rounded font-black text-[10px]">Edit Bal</button>
+                        <button onclick="editPlan(\${u.id}, \${u.activePlan ? u.activePlan.id : 0})" class="bg-purple-400 text-slate-950 py-1 rounded font-black text-[10px]">Edit Plan</button>
+                        <button onclick="editPhone(\${u.id}, '\${u.phone}')" class="bg-sky-400 text-slate-950 py-1 rounded font-black text-[10px]">Phone</button>
+                        <button onclick="editTeam(\${u.id}, \${u.teamCount})" class="bg-emerald-400 text-slate-950 py-1 rounded font-black text-[10px]">Team</button>
                       </div>
                     </div>
                   \`).join('')}
@@ -834,6 +847,19 @@ app.get('/', (req, res) => {
               </div>
             </div>
           \`;
+        }
+
+        function filterAdminUsers() {
+          const query = document.getElementById('userSearchInput').value.toLowerCase();
+          const cards = document.querySelectorAll('.admin-user-card');
+          cards.forEach(card => {
+            const text = card.getAttribute('data-search');
+            if (text.includes(query)) {
+              card.style.display = 'block';
+            } else {
+              card.style.display = 'none';
+            }
+          });
         }
 
         async function approveDeposit(id, status) {
@@ -844,6 +870,34 @@ app.get('/', (req, res) => {
 
         async function approveWithdraw(id, status) {
           await api('/api/admin/withdraw', { id, status });
+          renderAdmin();
+        }
+
+        async function editBalance(userId, currentBal) {
+          const newBal = prompt('Enter new balance (Rs.):', currentBal);
+          if(newBal === null || newBal === '') return;
+          await api('/api/admin/bal', { userId: Number(userId), balance: Number(newBal) });
+          renderAdmin();
+        }
+
+        async function editPlan(userId, currentPlanId) {
+          const newPlan = prompt('Enter Plan ID (1 to 6, or 0 for None):', currentPlanId);
+          if(newPlan === null || newPlan === '') return;
+          await api('/api/admin/plan', { userId: Number(userId), planId: Number(newPlan) });
+          renderAdmin();
+        }
+
+        async function editPhone(userId, currentPhone) {
+          const newPhone = prompt('Enter new phone number:', currentPhone);
+          if(newPhone === null || newPhone.trim() === '') return;
+          await api('/api/admin/phone', { userId: Number(userId), phone: newPhone.trim() });
+          renderAdmin();
+        }
+
+        async function editTeam(userId, currentTeam) {
+          const newTeam = prompt('Enter Active Invites count:', currentTeam);
+          if(newTeam === null || newTeam === '') return;
+          await api('/api/admin/team', { userId: Number(userId), teamCount: Number(newTeam) });
           renderAdmin();
         }
 
@@ -893,7 +947,6 @@ app.post('/api/user', (req, res) => {
   res.send({ user, plans: db.plans, teamCount, deposits, withdrawals });
 });
 
-// RIGGED LUCKY SPIN API (Always lands on Rs. 5)
 app.post('/api/spin', (req, res) => {
   const userId = Number(req.body.userId);
   const user = db.users.find(u => u.id === userId);
@@ -907,10 +960,9 @@ app.post('/api/spin', (req, res) => {
   }
 
   user.lastSpinTime = now;
-  user.balance = Number((Number(user.balance || 0) + 5).toFixed(2)); // FIXED RS. 5 REWARD
+  user.balance = Number((Number(user.balance || 0) + 5).toFixed(2));
   saveDB();
-
-  res.send({ ok: true, msg: '🎉 Incredible Luck! You won Rs. 5 Free Crypto Reward from the Lucky Spin Wheel! Added to your vault.' });
+  res.send({ ok: true, msg: '🎉 Incredible Luck! You won Rs. 5 Free Crypto Reward from the Lucky Spin Wheel!' });
 });
 
 app.post('/api/deposit', (req, res) => {
@@ -921,7 +973,7 @@ app.post('/api/deposit', (req, res) => {
   
   const teamCount = getUserTeamCount(user);
   if (p.reqInvites && teamCount < p.reqInvites) {
-    return res.send({ ok: false, msg: '🔒 This tier is locked! You need at least ' + p.reqInvites + ' active team invites to deposit in ' + p.name + '. Your current active invites: ' + teamCount });
+    return res.send({ ok: false, msg: '🔒 This tier is locked! You need at least ' + p.reqInvites + ' active team invites to deposit in ' + p.name + '. Current invites: ' + teamCount });
   }
 
   db.deposits.push({
@@ -947,23 +999,52 @@ app.post('/api/withdraw', (req, res) => {
 app.post('/api/claim', (req, res) => {
   checkPlanExpirations();
   const user = db.users.find(u => u.id === Number(req.body.userId));
-  if(!user || !user.activePlan) return res.send({ ok: false, msg: 'No active VIP plan found or your plan has expired! Please deposit via NayaPay to activate a new tier.' });
+  if(!user || !user.activePlan) return res.send({ ok: false, msg: 'No active VIP plan found or your plan has expired!' });
   
   const now = Date.now();
   const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
   if(user.lastClaimTime && (now - user.lastClaimTime < TWENTY_FOUR_HOURS)) {
     const hoursLeft = Math.ceil((TWENTY_FOUR_HOURS - (now - user.lastClaimTime)) / (1000 * 60 * 60));
-    return res.send({ ok: false, msg: 'Your Daily ROI is auto-credited every 24 hours! Next automatic credit in ' + hoursLeft + ' hour(s).' });
+    return res.send({ ok: false, msg: 'Your Daily ROI is auto-credited every 24 hours! Next credit in ' + hoursLeft + ' hour(s).' });
   }
 
   creditUserROI(user);
   res.send({ ok: true, msg: 'Daily ROI (Rs. ' + user.activePlan.daily + ') successfully added to your wallet!' });
 });
 
+// ADMIN API WITH TOTAL P&L CALCULATION AND INDIVIDUAL USER LEDGER
 app.post('/api/admin/data', (req, res) => {
   checkPlanExpirations();
-  const usersWithTeam = db.users.map(u => ({ ...u, teamCount: getUserTeamCount(u) }));
-  res.send({ deposits: db.deposits.filter(d => d.status === 'Pending'), withdrawals: db.withdrawals.filter(w => w.status === 'Pending'), users: usersWithTeam });
+  
+  let totalDeposits = 0;
+  db.deposits.filter(d => d.status === 'Approved').forEach(d => { totalDeposits += Number(d.amount || 0); });
+
+  let totalWithdrawals = 0;
+  db.withdrawals.filter(w => w.status === 'Approved').forEach(w => { totalWithdrawals += Number(w.amount || 0); });
+
+  const netProfit = totalDeposits - totalWithdrawals;
+
+  const usersWithLedger = db.users.map(u => {
+    let uDep = 0;
+    db.deposits.filter(d => d.userId === u.id && d.status === 'Approved').forEach(d => { uDep += Number(d.amount || 0); });
+
+    let uWd = 0;
+    db.withdrawals.filter(w => w.userId === u.id && w.status === 'Approved').forEach(w => { uWd += Number(w.amount || 0); });
+
+    return {
+      ...u,
+      teamCount: getUserTeamCount(u),
+      totalDeposited: uDep,
+      totalWithdrawn: uWd
+    };
+  });
+
+  res.send({
+    stats: { totalDeposits, totalWithdrawals, netProfit },
+    deposits: db.deposits.filter(d => d.status === 'Pending'),
+    withdrawals: db.withdrawals.filter(w => w.status === 'Pending'),
+    users: usersWithLedger
+  });
 });
 
 app.post('/api/admin/deposit', (req, res) => {
@@ -1000,6 +1081,38 @@ app.post('/api/admin/withdraw', (req, res) => {
     }
     saveDB();
   }
+  res.send({ ok: true });
+});
+
+app.post('/api/admin/bal', (req, res) => {
+  const { userId, balance } = req.body;
+  const u = db.users.find(x => x.id === Number(userId));
+  if(u) { u.balance = Number(balance); saveDB(); }
+  res.send({ ok: true });
+});
+
+app.post('/api/admin/plan', (req, res) => {
+  const { userId, planId } = req.body;
+  const u = db.users.find(x => x.id === Number(userId));
+  if(u) {
+    if (Number(planId) === 0) { u.activePlan = null; u.planStartTime = null; u.lastClaimTime = null; }
+    else { const p = db.plans.find(x => x.id === Number(planId)); if (p) { u.activePlan = p; u.planStartTime = Date.now(); u.lastClaimTime = Date.now(); } }
+    saveDB();
+  }
+  res.send({ ok: true });
+});
+
+app.post('/api/admin/phone', (req, res) => {
+  const { userId, phone } = req.body;
+  const u = db.users.find(x => x.id === Number(userId));
+  if(u && phone) { u.phone = String(phone); saveDB(); }
+  res.send({ ok: true });
+});
+
+app.post('/api/admin/team', (req, res) => {
+  const { userId, teamCount } = req.body;
+  const u = db.users.find(x => x.id === Number(userId));
+  if(u) { u.customTeamCount = Number(teamCount); saveDB(); }
   res.send({ ok: true });
 });
 
