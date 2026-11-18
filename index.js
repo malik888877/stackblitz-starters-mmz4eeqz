@@ -211,7 +211,7 @@ app.get('/', (req, res) => {
       <div class="w-full bg-slate-950/90 border-b border-amber-500/30 py-1.5 overflow-hidden z-20 sticky top-0 backdrop-blur-md">
         <div class="animate-ticker text-[11px] font-bold tracking-wider text-amber-300">
           <span class="mx-4"><i class="fab fa-bitcoin text-amber-400 mr-1"></i> BTC/USDT AI-Node: <span class="text-emerald-400">+10.0% Daily Yield Active</span></span>
-          <span class="mx-4">⚡ VIP #370019 won <span class="text-amber-400">Rs. 100 Daily Lucky Spin Bonus</span></span>
+          <span class="mx-4">⚡ VIP #370019 won <span class="text-amber-400">Rs. 5 Daily Lucky Spin Bonus</span></span>
           <span class="mx-4">💸 VIP #752498 withdrew <span class="text-emerald-400">Rs. 4,500</span> via EasyPaisa</span>
         </div>
       </div>
@@ -453,7 +453,7 @@ app.get('/', (req, res) => {
                 </div>
               \` : ''}
 
-              <!-- CLEAN LUCKY SPIN BOX -->
+              <!-- FIXED STRICTLY RS. 5 LUCKY SPIN BOX -->
               <div class="glass-card px-3.5 py-2.5 rounded-2xl border border-amber-400/40 flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
                   <div class="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400 text-sm border border-amber-500/40">
@@ -461,7 +461,7 @@ app.get('/', (req, res) => {
                   </div>
                   <div>
                     <h4 class="font-black text-xs text-amber-300">Lucky Spin Wheel</h4>
-                    <p id="spinResultText" class="text-[10px] text-slate-300">Win Rs 5 Upto Rs 500</p>
+                    <p id="spinResultText" class="text-[10px] text-slate-300">Win Rs 5 Fixed Reward</p>
                   </div>
                 </div>
                 <button onclick="triggerLuckySpin()" id="spinBtn" class="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black px-3 py-1.5 rounded-xl text-[10px] uppercase shadow-md hover:brightness-110 transition shrink-0">
@@ -585,10 +585,10 @@ app.get('/', (req, res) => {
           if(btn) btn.disabled = true;
           
           let counter = 0;
-          const possiblePrizes = ['Rs. 5', 'Rs. 20', 'Rs. 100', 'Rs. 200', 'Rs. 250', 'Rs. 500'];
+          const possiblePrizes = ['Rs. 5', 'Rs. 5', 'Rs. 5'];
           
           const interval = setInterval(() => {
-            txt.innerText = '🌀 Spinning... ' + possiblePrizes[counter % possiblePrizes.length];
+            txt.innerText = '🌀 Spinning... Rs. 5';
             counter++;
           }, 80);
 
@@ -596,11 +596,11 @@ app.get('/', (req, res) => {
             clearInterval(interval);
             const res = await api('/api/spin', { userId: currentUser.id });
             if(res.ok) {
-              txt.innerText = '🎉 Won Rs. ' + res.wonAmount + ' Bonus!';
+              txt.innerText = '🎉 Won Rs. 5 Bonus!';
               alert(res.msg);
               renderDashboard();
             } else {
-              txt.innerText = 'Win Rs 5 Upto Rs 500';
+              txt.innerText = 'Win Rs 5 Fixed Reward';
               alert(res.msg);
               if(btn) btn.disabled = false;
             }
@@ -911,7 +911,7 @@ app.post('/api/register', (req, res) => {
   let randomId; do { randomId = Math.floor(100000 + Math.random() * 900000); } while(db.users.find(u => u.id === randomId));
 
   db.users.push({
-    id: randomId, name, phone: phone.trim(), pass, balance: 0,
+    id: randomId, name, phone: phone.trim(), pass, balance: 0, // STRICTLY ZERO BALANCE FOR NEW USERS
     activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0,
     referredBy: refId, refEarnings: 0, customTeamCount: null, isAdmin: false
   });
@@ -941,6 +941,7 @@ app.post('/api/user', (req, res) => {
   res.send({ user, plans: db.plans, teamCount, deposits, withdrawals });
 });
 
+// STRICTLY FIXED RS. 5 LUCKY SPIN API (NO HIGH AMOUNTS EVER)
 app.post('/api/spin', (req, res) => {
   const userId = Number(req.body.userId);
   const user = db.users.find(u => u.id === userId);
@@ -953,8 +954,7 @@ app.post('/api/spin', (req, res) => {
     return res.send({ ok: false, msg: '⏳ You have already used your free spin today! Come back in ' + hoursLeft + ' hour(s).' });
   }
 
-  const prizePool = [5, 5, 5, 20, 20, 100, 200, 250, 500];
-  const wonAmount = prizePool[Math.floor(Math.random() * prizePool.length)];
+  const wonAmount = 5; // STRICTLY FIXED RS. 5
 
   user.lastSpinTime = now;
   user.balance = Number((Number(user.balance || 0) + wonAmount).toFixed(2));
