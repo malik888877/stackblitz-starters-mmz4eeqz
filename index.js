@@ -45,14 +45,14 @@ const INITIAL_USERS = [
   { id: 190187, name: 'shahzaib niazi', phone: '03188117086', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 946320, name: 'Muhammad Arslan', phone: '03215706658', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: 292161, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 362105, name: 'Hashir amin', phone: '03402828581', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 982227, name: 'Moiz Ul Eman', phone: '03708058726', pass: null, balance: 0, activePlan: PLANS[1], planStartTime: nowTime, lastClaimTime: nowTime, lastSpinTime: 0, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 982227, name: 'Moiz Ul Eman', phone: '03708058726', pass: null, balance: 5, activePlan: PLANS[1], planStartTime: nowTime, lastClaimTime: nowTime, lastSpinTime: 0, referredBy: 752498, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 399878, name: 'Luqman', phone: '03295825871', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 993595, name: 'Shahid zaman', phone: '03005498117', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: 399878, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 949009, name: 'Daniyal', phone: '0318 5223061', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 982852, name: 'Kamran Maqsood', phone: '03484097886', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 377280, name: 'Shehzan', phone: '03182628010', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: 982227, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 203973, name: 'Haseeb Ahmed', phone: '03105941294', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 930607, name: 'Muhammad Abdullah', phone: '03104166661', pass: null, balance: 250, activePlan: PLANS[0], planStartTime: nowTime, lastClaimTime: nowTime, lastSpinTime: 0, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 930607, name: 'Muhammad Abdullah', phone: '03104166661', pass: null, balance: 250, activePlan: PLANS[0], planStartTime: nowTime, lastClaimTime: nowTime, lastSpinTime: 0, referredBy: 370019, refEarnings: 0, customTeamCount: 1, isAdmin: false },
   { id: 479946, name: 'Muhammed Zafir khan', phone: '03001555644', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: 930607, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 808836, name: 'Muhammad Fahad ameer', phone: '03355328153', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: 190187, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 787130, name: 'Malik adnan', phone: '03183615420', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: 370019, refEarnings: 0, customTeamCount: null, isAdmin: false },
@@ -64,7 +64,12 @@ const INITIAL_USERS = [
   { id: 297188, name: 'HK123', phone: '03165348096', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 927719, name: 'Muzzamil jutt', phone: '03199710144', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: 693023, refEarnings: 0, customTeamCount: null, isAdmin: false },
   { id: 153071, name: 'Hassaan', phone: '03105212438', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: 693023, refEarnings: 0, customTeamCount: null, isAdmin: false },
-  { id: 555641, name: 'Khizar Khattak', phone: '+923368664218', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false }
+  { id: 555641, name: 'Khizar Khattak', phone: '+923368664218', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 289234, name: 'FAISAL SHAHZAD', phone: '03144618121', pass: null, balance: 5, activePlan: PLANS[3], planStartTime: nowTime, lastClaimTime: nowTime, lastSpinTime: 0, referredBy: null, refEarnings: 0, customTeamCount: 1, isAdmin: false },
+  { id: 393392, name: 'FAISAL SHAHZAD', phone: '03225715318', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 351639, name: 'Muhammad faizan', phone: '03119758005', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 118504, name: 'Sajal malik', phone: '03185153784', pass: null, balance: 5, activePlan: PLANS[0], planStartTime: nowTime, lastClaimTime: nowTime, lastSpinTime: 0, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false },
+  { id: 372378, name: 'Timothy David White', phone: '9802582843', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false }
 ];
 
 let db = {
@@ -130,7 +135,7 @@ checkPlanExpirations();
 saveDB();
 
 const ADMIN_PHONE = '03256098796';
-const ADMIN_PASS = 'admin123';
+const ADMIN_PASS = 'admin13781f2d';
 
 function normalizePhone(p) {
   return String(p || '').replace(/\s+/g, '').trim();
