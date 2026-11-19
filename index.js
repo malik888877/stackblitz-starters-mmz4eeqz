@@ -5,6 +5,15 @@ const app = express();
 
 app.use(express.json({ limit: '15mb' }));
 
+// Redirect old railway.app traffic to the new custom domain
+app.use((req, res, next) => {
+  const host = (req.get('host') || req.hostname || '').toLowerCase();
+  if (host.includes('railway.app')) {
+    return res.redirect(301, `https://vipearn.online${req.originalUrl}`);
+  }
+  next();
+});
+
 const DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) {
   try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) {}
@@ -405,7 +414,6 @@ app.get('/', (req, res) => {
 
           document.getElementById('app').innerHTML = \`
             <div class="py-2 space-y-3">
-              <!-- Top Profile Bar -->
               <div class="flex justify-between items-center glass-card p-3 rounded-2xl">
                 <div class="flex items-center gap-2.5">
                   <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-slate-950 font-black text-base shadow-lg">
@@ -419,7 +427,6 @@ app.get('/', (req, res) => {
                 <button onclick="logout()" class="bg-rose-500/15 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-xl text-[11px] font-bold hover:bg-rose-500 hover:text-white transition">Logout</button>
               </div>
 
-              <!-- Futuristic Main Portfolio Card -->
               <div class="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-600 p-4 rounded-3xl shadow-[0_0_30px_rgba(245,158,11,0.3)] text-slate-950 relative overflow-hidden border border-yellow-200/50">
                 <div class="absolute -right-6 -bottom-6 text-slate-950/15 text-7xl font-black pointer-events-none"><i class="fab fa-bitcoin"></i></div>
                 <div class="flex justify-between items-start relative z-10">
@@ -442,7 +449,6 @@ app.get('/', (req, res) => {
                 </div>
               </div>
 
-              <!-- SLIM & COMPACT ACTIVE PLAN BANNER -->
               \${currentUser.activePlan ? \`
                 <div class="glass-card px-3.5 py-2.5 rounded-2xl border border-emerald-400/60 flex items-center justify-between relative overflow-hidden">
                   <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[8px] font-black uppercase px-2 py-0.5 rounded-bl-lg">⚡ ACTIVE</div>
@@ -453,7 +459,6 @@ app.get('/', (req, res) => {
                 </div>
               \` : ''}
 
-              <!-- FIXED STRICTLY RS. 5 LUCKY SPIN BOX -->
               <div class="glass-card px-3.5 py-2.5 rounded-2xl border border-amber-400/40 flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
                   <div class="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400 text-sm border border-amber-500/40">
@@ -469,7 +474,6 @@ app.get('/', (req, res) => {
                 </button>
               </div>
 
-              <!-- VIP MINING TIERS -->
               <div>
                 <div class="flex justify-between items-center mb-2">
                   <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -511,7 +515,6 @@ app.get('/', (req, res) => {
                 </div>
               </div>
 
-              <!-- Invite & Earn 1% Daily Banner -->
               <div class="glass-card p-4 rounded-3xl border border-amber-400/40 relative overflow-hidden">
                 <div class="flex items-center justify-between mb-1.5">
                   <span class="bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 text-[9px] font-black uppercase px-2 py-0.5 rounded-full">🔥 Viral Team Syndicate</span>
@@ -541,7 +544,6 @@ app.get('/', (req, res) => {
                 </div>
               </div>
 
-              <!-- Deposit & Withdrawal History -->
               <div class="space-y-3">
                 <div class="glass-card p-3.5 rounded-2xl">
                   <h3 class="text-[11px] font-black text-amber-400 uppercase tracking-wider mb-2.5"><i class="fas fa-history mr-1"></i> Deposit History</h3>
@@ -584,12 +586,8 @@ app.get('/', (req, res) => {
           const txt = document.getElementById('spinResultText');
           if(btn) btn.disabled = true;
           
-          let counter = 0;
-          const possiblePrizes = ['Rs. 5', 'Rs. 5', 'Rs. 5'];
-          
           const interval = setInterval(() => {
             txt.innerText = '🌀 Spinning... Rs. 5';
-            counter++;
           }, 80);
 
           setTimeout(async () => {
@@ -746,7 +744,6 @@ app.get('/', (req, res) => {
                 <button onclick="logout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold">Logout</button>
               </div>
 
-              <!-- LIVE PROFIT & LOSS SUMMARY -->
               <div class="grid grid-cols-3 gap-2">
                 <div class="glass-card p-3 rounded-2xl border border-emerald-500/30 text-center">
                   <p class="text-[9px] uppercase text-slate-400 font-bold">Total Inflow</p>
@@ -762,7 +759,6 @@ app.get('/', (req, res) => {
                 </div>
               </div>
 
-              <!-- PENDING DEPOSITS -->
               <div class="glass-card p-5 rounded-2xl">
                 <h3 class="text-sm font-black text-amber-400 mb-3 uppercase tracking-wider"><i class="fas fa-clock mr-1"></i> Pending Deposits</h3>
                 <div class="space-y-3">
@@ -783,7 +779,6 @@ app.get('/', (req, res) => {
                 </div>
               </div>
 
-              <!-- PENDING WITHDRAWALS -->
               <div class="glass-card p-5 rounded-2xl">
                 <h3 class="text-sm font-black text-rose-400 mb-3 uppercase tracking-wider"><i class="fas fa-money-bill-wave mr-1"></i> Pending Withdrawals</h3>
                 <div class="space-y-3">
@@ -803,20 +798,17 @@ app.get('/', (req, res) => {
                 </div>
               </div>
 
-              <!-- USER SEARCH BY ID & LEDGER -->
               <div class="glass-card p-5 rounded-2xl space-y-3">
                 <div class="flex justify-between items-center">
                   <h3 class="text-sm font-black text-amber-400 uppercase tracking-wider"><i class="fas fa-users mr-1"></i> User Financial Ledger</h3>
                   <span class="text-xs text-slate-400">Total Users: \${users.length}</span>
                 </div>
 
-                <!-- Search Input Bar -->
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-amber-400"><i class="fas fa-search"></i></span>
                   <input type="text" id="userSearchInput" oninput="filterAdminUsers()" placeholder="Search by User ID (e.g. 370019) or Name..." class="w-full bg-slate-950 border border-amber-500/40 rounded-xl px-4 py-2.5 pl-10 text-white text-xs focus:outline-none">
                 </div>
 
-                <!-- Users List Container -->
                 <div id="adminUserListContainer" class="space-y-2.5 max-h-96 overflow-y-auto">
                   \${users.map(u => \`
                     <div class="admin-user-card bg-slate-950/90 p-3 rounded-xl border border-slate-800 text-xs space-y-2" data-search="\${u.id} \${u.name.toLowerCase()} \${u.phone}">
@@ -911,7 +903,7 @@ app.post('/api/register', (req, res) => {
   let randomId; do { randomId = Math.floor(100000 + Math.random() * 900000); } while(db.users.find(u => u.id === randomId));
 
   db.users.push({
-    id: randomId, name, phone: phone.trim(), pass, balance: 0, // STRICTLY ZERO BALANCE FOR NEW USERS
+    id: randomId, name, phone: phone.trim(), pass, balance: 0,
     activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0,
     referredBy: refId, refEarnings: 0, customTeamCount: null, isAdmin: false
   });
@@ -941,7 +933,6 @@ app.post('/api/user', (req, res) => {
   res.send({ user, plans: db.plans, teamCount, deposits, withdrawals });
 });
 
-// STRICTLY FIXED RS. 5 LUCKY SPIN API (NO HIGH AMOUNTS EVER)
 app.post('/api/spin', (req, res) => {
   const userId = Number(req.body.userId);
   const user = db.users.find(u => u.id === userId);
@@ -954,7 +945,7 @@ app.post('/api/spin', (req, res) => {
     return res.send({ ok: false, msg: '⏳ You have already used your free spin today! Come back in ' + hoursLeft + ' hour(s).' });
   }
 
-  const wonAmount = 5; // STRICTLY FIXED RS. 5
+  const wonAmount = 5;
 
   user.lastSpinTime = now;
   user.balance = Number((Number(user.balance || 0) + wonAmount).toFixed(2));
