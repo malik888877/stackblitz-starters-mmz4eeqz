@@ -888,8 +888,8 @@ app.get('/', (req, res) => {
                         <select id="overridePlan_\${d.id}" class="bg-slate-900 border border-amber-500/40 rounded-lg px-2 text-white text-xs">
                           <option value="1">VIP 1</option><option value="2">VIP 2</option><option value="3">VIP 3</option><option value="4">VIP 4</option><option value="5">VIP 5</option><option value="6">VIP 6</option>
                         </select>
-                        <button onclick="approveDeposit(\${d.id}, 'Approved')" class="flex-1 bg-emerald-500 text-slate-950 py-1.5 rounded-lg font-black uppercase text-xs">Approve</button>
-                        <button onclick="approveDeposit(\${d.id}, 'Rejected')" class="bg-rose-500 text-white px-3 py-1.5 rounded-lg font-black uppercase text-xs">Reject</button>
+                        <button onclick="approveDeposit(\${d.id}, 'Approved', \${d.userId}, \${d.amount})" class="flex-1 bg-emerald-500 text-slate-950 py-1.5 rounded-lg font-black uppercase text-xs">Approve</button>
+                        <button onclick="approveDeposit(\${d.id}, 'Rejected', \${d.userId}, \${d.amount})" class="bg-rose-500 text-white px-3 py-1.5 rounded-lg font-black uppercase text-xs">Reject</button>
                       </div>
                     </div>
                   \`).join('')}
@@ -965,11 +965,13 @@ app.get('/', (req, res) => {
           });
         }
 
-        async function approveDeposit(id, status) {
+        async function approveDeposit(id, status, userId, amount) {
           const selectEl = document.getElementById('overridePlan_' + id);
           const res = await api('/api/admin/deposit', {
             id,
             status,
+            userId,
+            amount,
             approvedPlanId: selectEl ? Number(selectEl.value) : null
           });
           if (!res || res.ok === false) {
@@ -1262,14 +1264,32 @@ app.post('/api/admin/data', requireAdmin, (req, res) => {
 });
 
 app.post('/api/admin/deposit', requireAdmin, (req, res) => {
-  const { id, status, approvedPlanId } = req.body || {};
+  const { id, status, approvedPlanId, userId, amount } = req.body || {};
   if (!['Approved', 'Rejected'].includes(status)) {
     return res.send({ ok: false, msg: 'Invalid status!' });
   }
-  const d = db.deposits.find(x => Number(x.id) === Number(id));
-  if(!d || d.status !== 'Pending') {
+
+  let d = null;
+  if (id !== undefined && id !== null && String(id) !== 'undefined') {
+    d = db.deposits.find(x => x.id !== undefined && Number(x.id) === Number(id) && x.status === 'Pending');
+  }
+
+  if (!d && userId !== undefined) {
+    d = db.deposits.find(
+      x => Number(x.userId) === Number(userId) &&
+      x.status === 'Pending' &&
+      (amount === undefined || Number(x.amount) === Number(amount))
+    );
+  }
+
+  if (!d && (id === undefined || id === null || String(id) === 'undefined')) {
+    d = db.deposits.find(x => x.status === 'Pending');
+  }
+
+  if (!d) {
     return res.send({ ok: false, msg: 'Pending deposit not found!' });
   }
+
   d.status = status; delete d.screenshot;
   if(status === 'Approved') {
     const u = db.users.find(x => Number(x.id) === Number(d.userId));
