@@ -967,40 +967,68 @@ app.get('/', (req, res) => {
 
         async function approveDeposit(id, status) {
           const selectEl = document.getElementById('overridePlan_' + id);
-          await api('/api/admin/deposit', { id, status, approvedPlanId: selectEl ? Number(selectEl.value) : null });
+          const res = await api('/api/admin/deposit', {
+            id,
+            status,
+            approvedPlanId: selectEl ? Number(selectEl.value) : null
+          });
+          if (!res || res.ok === false) {
+            alert(res && res.msg ? res.msg : 'Action failed. Please login again.');
+            return;
+          }
           renderAdmin();
         }
 
         async function approveWithdraw(id, status) {
-          await api('/api/admin/withdraw', { id, status });
+          const res = await api('/api/admin/withdraw', { id, status });
+          if (!res || res.ok === false) {
+            alert(res && res.msg ? res.msg : 'Action failed. Please login again.');
+            return;
+          }
           renderAdmin();
         }
 
         async function editBalance(userId, currentBal) {
           const newBal = prompt('Enter new balance (Rs.):', currentBal);
           if(newBal === null || newBal === '') return;
-          await api('/api/admin/bal', { userId: Number(userId), balance: Number(newBal) });
+          const res = await api('/api/admin/bal', { userId: Number(userId), balance: Number(newBal) });
+          if (!res || res.ok === false) {
+            alert(res && res.msg ? res.msg : 'Action failed.');
+            return;
+          }
           renderAdmin();
         }
 
         async function editPlan(userId, currentPlanId) {
           const newPlan = prompt('Enter Plan ID (1 to 6, or 0 for None):', currentPlanId);
           if(newPlan === null || newPlan === '') return;
-          await api('/api/admin/plan', { userId: Number(userId), planId: Number(newPlan) });
+          const res = await api('/api/admin/plan', { userId: Number(userId), planId: Number(newPlan) });
+          if (!res || res.ok === false) {
+            alert(res && res.msg ? res.msg : 'Action failed.');
+            return;
+          }
           renderAdmin();
         }
 
         async function editPhone(userId, currentPhone) {
           const newPhone = prompt('Enter new phone number:', currentPhone);
           if(newPhone === null || newPhone.trim() === '') return;
-          await api('/api/admin/phone', { userId: Number(userId), phone: newPhone.trim() });
+          const res = await api('/api/admin/phone', { userId: Number(userId), phone: newPhone.trim() });
+          if (!res || res.ok === false) {
+            alert(res && res.msg ? res.msg : 'Action failed.');
+            return;
+          }
           renderAdmin();
         }
 
         async function editTeam(userId, currentTeam) {
           const newTeam = prompt('Enter Active Invites count:', currentTeam);
           if(newTeam === null || newTeam === '') return;
-          await api('/api/admin/team', { userId: Number(userId), teamCount: Number(newTeam) });
+          const res = await api('/api/admin/team', { userId: Number(userId), teamCount: Number(newTeam) });
+          if (!res || res.ok === false) {
+            alert(res && res.msg ? res.msg : 'Action failed.');
+            return;
+          }
           renderAdmin();
         }
 
@@ -1135,7 +1163,7 @@ app.post('/api/deposit', (req, res) => {
   }
 
   db.deposits.push({
-    id: db.deposits.length + 1, userId: Number(userId), planId: p.id,
+    id: Date.now(), userId: Number(userId), planId: p.id,
     planName: p.name, amount: p.price, screenshot, method: 'NayaPay', status: 'Pending'
   });
   saveDB();
@@ -1170,7 +1198,7 @@ app.post('/api/withdraw', (req, res) => {
   }
 
   db.withdrawals.push({
-    id: db.withdrawals.length + 1,
+    id: Date.now(),
     userId: Number(userId),
     method,
     account: cleanAccount,
@@ -1238,24 +1266,25 @@ app.post('/api/admin/deposit', requireAdmin, (req, res) => {
   if (!['Approved', 'Rejected'].includes(status)) {
     return res.send({ ok: false, msg: 'Invalid status!' });
   }
-  const d = db.deposits.find(x => x.id === Number(id));
-  if(d && d.status === 'Pending') {
-    d.status = status; delete d.screenshot;
-    if(status === 'Approved') {
-      const u = db.users.find(x => x.id === d.userId);
-      const p = db.plans.find(x => x.id === Number(approvedPlanId || d.planId));
-      if(u && p) {
-        d.planId = p.id; d.planName = p.name; d.amount = p.price;
-        const hadPlanBefore = u.activePlan !== null;
-        u.activePlan = p; u.planStartTime = Date.now(); u.lastClaimTime = Date.now();
-        if (!hadPlanBefore && u.referredBy) {
-          const referrer = db.users.find(r => r.id === Number(u.referredBy));
-          if (referrer && typeof referrer.customTeamCount === 'number') referrer.customTeamCount += 1;
-        }
+  const d = db.deposits.find(x => Number(x.id) === Number(id));
+  if(!d || d.status !== 'Pending') {
+    return res.send({ ok: false, msg: 'Pending deposit not found!' });
+  }
+  d.status = status; delete d.screenshot;
+  if(status === 'Approved') {
+    const u = db.users.find(x => Number(x.id) === Number(d.userId));
+    const p = db.plans.find(x => Number(x.id) === Number(approvedPlanId || d.planId));
+    if(u && p) {
+      d.planId = p.id; d.planName = p.name; d.amount = p.price;
+      const hadPlanBefore = u.activePlan !== null;
+      u.activePlan = p; u.planStartTime = Date.now(); u.lastClaimTime = Date.now();
+      if (!hadPlanBefore && u.referredBy) {
+        const referrer = db.users.find(r => Number(r.id) === Number(u.referredBy));
+        if (referrer && typeof referrer.customTeamCount === 'number') referrer.customTeamCount += 1;
       }
     }
-    saveDB();
   }
+  saveDB();
   res.send({ ok: true });
 });
 
@@ -1264,15 +1293,16 @@ app.post('/api/admin/withdraw', requireAdmin, (req, res) => {
   if (!['Approved', 'Rejected'].includes(status)) {
     return res.send({ ok: false, msg: 'Invalid status!' });
   }
-  const w = db.withdrawals.find(x => x.id === Number(id));
-  if(w && w.status === 'Pending') {
-    w.status = status;
-    if(status === 'Approved') {
-      const u = db.users.find(x => x.id === w.userId);
-      if(u && u.balance >= w.amount) u.balance = Number((u.balance - w.amount).toFixed(2));
-    }
-    saveDB();
+  const w = db.withdrawals.find(x => Number(x.id) === Number(id));
+  if(!w || w.status !== 'Pending') {
+    return res.send({ ok: false, msg: 'Pending withdrawal not found!' });
   }
+  w.status = status;
+  if(status === 'Approved') {
+    const u = db.users.find(x => Number(x.id) === Number(w.userId));
+    if(u && u.balance >= w.amount) u.balance = Number((u.balance - w.amount).toFixed(2));
+  }
+  saveDB();
   res.send({ ok: true });
 });
 
