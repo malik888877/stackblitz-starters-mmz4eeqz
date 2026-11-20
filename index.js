@@ -4,7 +4,16 @@ const path = require('path');
 const crypto = require('crypto');
 const app = express();
 
+app.disable('x-powered-by');
 app.use(express.json({ limit: '15mb' }));
+
+// Basic security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  next();
+});
 
 // Redirect old railway.app traffic to the new custom domain
 app.use((req, res, next) => {
@@ -77,6 +86,11 @@ const BLOCKED_TEST_PHONES = new Set(['03005159516', '03009990083', '03009990095'
 
 function normalizePhone(p) {
   return String(p || '').replace(/\s+/g, '').trim();
+}
+
+function isValidPhone(p) {
+  const cleaned = normalizePhone(p);
+  return /^\+?\d{7,15}$/.test(cleaned);
 }
 
 function isTestAccount(u) {
@@ -159,16 +173,55 @@ const ADMIN_PASS = process.env.ADMIN_PASS || 'admin13781f2d';
 const adminSessions = new Map(); // token -> expiresAt
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 
+// Brute-force protection for login
+const loginFailures = new Map(); // key -> { count, lockedUntil }
+const MAX_FAILS = 5;
+const LOCK_MS = 15 * 60 * 1000;
+
+function getClientKey(req, phone) {
+  const ip = (req.get('x-forwarded-for') || req.ip || 'unknown').split(',')[0].trim();
+  return `${ip}:${normalizePhone(phone)}`;
+}
+
+function isLoginLocked(key) {
+  const rec = loginFailures.get(key);
+  if (!rec) return false;
+  if (rec.lockedUntil && Date.now() < rec.lockedUntil) return true;
+  if (rec.lockedUntil && Date.now() >= rec.lockedUntil) {
+    loginFailures.delete(key);
+    return false;
+  }
+  return false;
+}
+
+function recordLoginFail(key) {
+  const rec = loginFailures.get(key) || { count: 0, lockedUntil: 0 };
+  rec.count += 1;
+  if (rec.count >= MAX_FAILS) {
+    rec.lockedUntil = Date.now() + LOCK_MS;
+    rec.count = 0;
+  }
+  loginFailures.set(key, rec);
+}
+
+function clearLoginFail(key) {
+  loginFailures.delete(key);
+}
+
 function createAdminToken() {
   const token = crypto.randomBytes(32).toString('hex');
   adminSessions.set(token, Date.now() + SESSION_TTL_MS);
   return token;
 }
 
-function requireAdmin(req, res, next) {
+function extractAdminToken(req) {
   const authHeader = req.get('authorization') || '';
   const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-  const token = (req.body && req.body.adminToken) || req.get('x-admin-token') || bearerToken;
+  return (req.body && req.body.adminToken) || req.get('x-admin-token') || bearerToken;
+}
+
+function requireAdmin(req, res, next) {
+  const token = extractAdminToken(req);
 
   if (!token || !adminSessions.has(token)) {
     return res.status(401).send({ ok: false, msg: 'Unauthorized admin access!' });
@@ -180,7 +233,6 @@ function requireAdmin(req, res, next) {
     return res.status(401).send({ ok: false, msg: 'Admin session expired. Please login again.' });
   }
 
-  // Refresh TTL on active request
   adminSessions.set(token, Date.now() + SESSION_TTL_MS);
   next();
 }
@@ -952,7 +1004,15 @@ app.get('/', (req, res) => {
           renderAdmin();
         }
 
-        function logout() { currentUser = null; adminToken = null; renderLogin(); }
+        async function logout() {
+          if (adminToken) {
+            try { await api('/api/admin/logout', {}); } catch (e) {}
+          }
+          currentUser = null;
+          adminToken = null;
+          renderLogin();
+        }
+
         if(refFromUrl) renderRegister(); else renderLogin();
       </script>
     </body>
@@ -961,24 +1021,47 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/register', (req, res) => {
-  const { name, phone, pass, referredBy } = req.body;
+  const { name, phone, pass, referredBy } = req.body || {};
+  const trimmedName = String(name || '').trim();
   const cleanPhone = normalizePhone(phone);
-  if(db.users.find(u => normalizePhone(u.phone) === cleanPhone)) return res.send({ ok: false, msg: 'Phone number already registered!' });
+  const passwordStr = String(pass || '');
+
+  if (trimmedName.length < 2 || trimmedName.length > 60) {
+    return res.send({ ok: false, msg: 'Please enter a valid full name!' });
+  }
+  if (!isValidPhone(cleanPhone)) {
+    return res.send({ ok: false, msg: 'Please enter a valid phone number!' });
+  }
+  if (passwordStr.length < 4) {
+    return res.send({ ok: false, msg: 'Password must be at least 4 characters!' });
+  }
+  if (db.users.find(u => normalizePhone(u.phone) === cleanPhone)) {
+    return res.send({ ok: false, msg: 'Phone number already registered!' });
+  }
+
   const refId = referredBy ? Number(referredBy) : null;
   let randomId; do { randomId = Math.floor(100000 + Math.random() * 900000); } while(db.users.find(u => u.id === randomId));
 
   db.users.push({
-    id: randomId, name, phone: phone.trim(), pass, balance: 0,
+    id: randomId, name: trimmedName, phone: cleanPhone, pass: passwordStr, balance: 0,
     activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0,
-    referredBy: refId, refEarnings: 0, customTeamCount: null, isAdmin: false
+    referredBy: Number.isFinite(refId) ? refId : null, refEarnings: 0, customTeamCount: null, isAdmin: false
   });
   saveDB(); res.send({ ok: true });
 });
 
 app.post('/api/login', (req, res) => {
-  const { phone, pass } = req.body;
+  const { phone, pass } = req.body || {};
   const cleanPhone = normalizePhone(phone);
-  if(cleanPhone === normalizePhone(ADMIN_PHONE) && pass === ADMIN_PASS) {
+  const passwordStr = String(pass || '');
+  const clientKey = getClientKey(req, cleanPhone);
+
+  if (isLoginLocked(clientKey)) {
+    return res.status(429).send({ ok: false, msg: 'Too many failed attempts. Please try again in 15 minutes.' });
+  }
+
+  if(cleanPhone === normalizePhone(ADMIN_PHONE) && passwordStr === ADMIN_PASS) {
+    clearLoginFail(clientKey);
     const adminToken = createAdminToken();
     return res.send({
       ok: true,
@@ -986,25 +1069,37 @@ app.post('/api/login', (req, res) => {
       user: { id: 999, name: 'Syndicate Boss', phone: ADMIN_PHONE, isAdmin: true }
     });
   }
+
   const user = db.users.find(u => normalizePhone(u.phone) === cleanPhone);
-  if(!user) return res.send({ ok: false, msg: 'Invalid mobile number or password!' });
-  if(!user.pass) { user.pass = pass; saveDB(); }
-  else if(user.pass !== pass) return res.send({ ok: false, msg: 'Invalid mobile number or password!' });
+  if(!user) {
+    recordLoginFail(clientKey);
+    return res.send({ ok: false, msg: 'Invalid mobile number or password!' });
+  }
+  if(!user.pass) {
+    user.pass = passwordStr;
+    saveDB();
+  } else if(user.pass !== passwordStr) {
+    recordLoginFail(clientKey);
+    return res.send({ ok: false, msg: 'Invalid mobile number or password!' });
+  }
+
+  clearLoginFail(clientKey);
   res.send({ ok: true, user });
 });
 
 app.post('/api/user', (req, res) => {
   checkPlanExpirations();
-  const userId = Number(req.body.id);
+  const userId = Number(req.body && req.body.id);
   const user = db.users.find(u => u.id === userId);
+  if (!user) return res.send({ ok: false, msg: 'User not found!' });
   const teamCount = getUserTeamCount(user);
   const deposits = db.deposits.filter(d => d.userId === userId).map(({ screenshot, ...rest }) => rest);
   const withdrawals = db.withdrawals.filter(w => w.userId === userId);
-  res.send({ user, plans: db.plans, teamCount, deposits, withdrawals });
+  res.send({ ok: true, user, plans: db.plans, teamCount, deposits, withdrawals });
 });
 
 app.post('/api/spin', (req, res) => {
-  const userId = Number(req.body.userId);
+  const userId = Number(req.body && req.body.userId);
   const user = db.users.find(u => u.id === userId);
   if(!user) return res.send({ ok: false, msg: 'User not found!' });
 
@@ -1025,10 +1120,14 @@ app.post('/api/spin', (req, res) => {
 });
 
 app.post('/api/deposit', (req, res) => {
-  const { userId, planId, screenshot } = req.body;
-  if (!screenshot) return res.send({ ok: false, msg: 'Please upload a valid payment screenshot!' });
+  const { userId, planId, screenshot } = req.body || {};
+  if (!screenshot || typeof screenshot !== 'string' || !screenshot.startsWith('data:image/')) {
+    return res.send({ ok: false, msg: 'Please upload a valid payment screenshot!' });
+  }
   const user = db.users.find(u => u.id === Number(userId));
-  const p = db.plans.find(x => x.id === Number(planId)) || db.plans[0];
+  if (!user) return res.send({ ok: false, msg: 'User not found!' });
+  const p = db.plans.find(x => x.id === Number(planId));
+  if (!p) return res.send({ ok: false, msg: 'Invalid VIP plan selected!' });
   
   const teamCount = getUserTeamCount(user);
   if (p.reqInvites && teamCount < p.reqInvites) {
@@ -1044,20 +1143,47 @@ app.post('/api/deposit', (req, res) => {
 });
 
 app.post('/api/withdraw', (req, res) => {
-  const { userId, method, account, amount } = req.body;
+  const { userId, method, account, amount } = req.body || {};
   const numAmount = Number(amount);
-  if (numAmount < 300) return res.send({ ok: false, msg: 'Minimum withdrawal limit is Rs. 300!' });
-  const user = db.users.find(u => u.id === Number(userId));
-  if (!user || user.balance < numAmount) return res.send({ ok: false, msg: 'Insufficient wallet balance!' });
+  const cleanAccount = String(account || '').trim();
+  const allowedMethods = new Set(['NayaPay', 'EasyPaisa', 'JazzCash']);
 
-  db.withdrawals.push({ id: db.withdrawals.length + 1, userId: Number(userId), method, account, amount: numAmount, status: 'Pending' });
+  if (!allowedMethods.has(String(method || ''))) {
+    return res.send({ ok: false, msg: 'Invalid withdrawal method!' });
+  }
+  if (cleanAccount.length < 5 || cleanAccount.length > 80) {
+    return res.send({ ok: false, msg: 'Please enter valid account details!' });
+  }
+  if (!Number.isFinite(numAmount) || numAmount < 300) {
+    return res.send({ ok: false, msg: 'Minimum withdrawal limit is Rs. 300!' });
+  }
+
+  const user = db.users.find(u => u.id === Number(userId));
+  if (!user) return res.send({ ok: false, msg: 'User not found!' });
+
+  const pendingSum = db.withdrawals
+    .filter(w => w.userId === user.id && w.status === 'Pending')
+    .reduce((acc, w) => acc + Number(w.amount || 0), 0);
+
+  if (Number(user.balance || 0) < pendingSum + numAmount) {
+    return res.send({ ok: false, msg: 'Insufficient available wallet balance (including pending payouts)!' });
+  }
+
+  db.withdrawals.push({
+    id: db.withdrawals.length + 1,
+    userId: Number(userId),
+    method,
+    account: cleanAccount,
+    amount: numAmount,
+    status: 'Pending'
+  });
   saveDB();
   res.send({ ok: true, msg: 'Withdrawal request of Rs. ' + numAmount + ' submitted successfully! Pending Admin approval.' });
 });
 
 app.post('/api/claim', (req, res) => {
   checkPlanExpirations();
-  const user = db.users.find(u => u.id === Number(req.body.userId));
+  const user = db.users.find(u => u.id === Number(req.body && req.body.userId));
   if(!user || !user.activePlan) return res.send({ ok: false, msg: 'No active VIP plan found or your plan has expired!' });
   
   const now = Date.now();
@@ -1072,6 +1198,12 @@ app.post('/api/claim', (req, res) => {
 });
 
 // PROTECTED ADMIN ROUTES
+app.post('/api/admin/logout', requireAdmin, (req, res) => {
+  const token = extractAdminToken(req);
+  if (token) adminSessions.delete(token);
+  res.send({ ok: true });
+});
+
 app.post('/api/admin/data', requireAdmin, (req, res) => {
   checkPlanExpirations();
   
@@ -1102,7 +1234,10 @@ app.post('/api/admin/data', requireAdmin, (req, res) => {
 });
 
 app.post('/api/admin/deposit', requireAdmin, (req, res) => {
-  const { id, status, approvedPlanId } = req.body;
+  const { id, status, approvedPlanId } = req.body || {};
+  if (!['Approved', 'Rejected'].includes(status)) {
+    return res.send({ ok: false, msg: 'Invalid status!' });
+  }
   const d = db.deposits.find(x => x.id === Number(id));
   if(d && d.status === 'Pending') {
     d.status = status; delete d.screenshot;
@@ -1125,7 +1260,10 @@ app.post('/api/admin/deposit', requireAdmin, (req, res) => {
 });
 
 app.post('/api/admin/withdraw', requireAdmin, (req, res) => {
-  const { id, status } = req.body;
+  const { id, status } = req.body || {};
+  if (!['Approved', 'Rejected'].includes(status)) {
+    return res.send({ ok: false, msg: 'Invalid status!' });
+  }
   const w = db.withdrawals.find(x => x.id === Number(id));
   if(w && w.status === 'Pending') {
     w.status = status;
@@ -1139,38 +1277,48 @@ app.post('/api/admin/withdraw', requireAdmin, (req, res) => {
 });
 
 app.post('/api/admin/bal', requireAdmin, (req, res) => {
-  const { userId, balance } = req.body;
+  const { userId, balance } = req.body || {};
   const numBal = Number(balance);
-  if (Number.isNaN(numBal) || numBal < 0) {
+  if (!Number.isFinite(numBal) || numBal < 0 || numBal > 100000000) {
     return res.send({ ok: false, msg: 'Invalid balance value!' });
   }
   const u = db.users.find(x => x.id === Number(userId));
-  if(u) { u.balance = numBal; saveDB(); }
+  if(u) { u.balance = Number(numBal.toFixed(2)); saveDB(); }
   res.send({ ok: true });
 });
 
 app.post('/api/admin/plan', requireAdmin, (req, res) => {
-  const { userId, planId } = req.body;
+  const { userId, planId } = req.body || {};
+  const numPlanId = Number(planId);
   const u = db.users.find(x => x.id === Number(userId));
   if(u) {
-    if (Number(planId) === 0) { u.activePlan = null; u.planStartTime = null; u.lastClaimTime = null; }
-    else { const p = db.plans.find(x => x.id === Number(planId)); if (p) { u.activePlan = p; u.planStartTime = Date.now(); u.lastClaimTime = Date.now(); } }
+    if (numPlanId === 0) {
+      u.activePlan = null; u.planStartTime = null; u.lastClaimTime = null;
+    } else {
+      const p = db.plans.find(x => x.id === numPlanId);
+      if (!p) return res.send({ ok: false, msg: 'Invalid plan ID!' });
+      u.activePlan = p; u.planStartTime = Date.now(); u.lastClaimTime = Date.now();
+    }
     saveDB();
   }
   res.send({ ok: true });
 });
 
 app.post('/api/admin/phone', requireAdmin, (req, res) => {
-  const { userId, phone } = req.body;
+  const { userId, phone } = req.body || {};
+  const cleanPhone = normalizePhone(phone);
+  if (!isValidPhone(cleanPhone)) {
+    return res.send({ ok: false, msg: 'Invalid phone number!' });
+  }
   const u = db.users.find(x => x.id === Number(userId));
-  if(u && phone) { u.phone = String(phone); saveDB(); }
+  if(u) { u.phone = cleanPhone; saveDB(); }
   res.send({ ok: true });
 });
 
 app.post('/api/admin/team', requireAdmin, (req, res) => {
-  const { userId, teamCount } = req.body;
+  const { userId, teamCount } = req.body || {};
   const numTeam = Number(teamCount);
-  if (Number.isNaN(numTeam) || numTeam < 0) {
+  if (!Number.isInteger(numTeam) || numTeam < 0 || numTeam > 100000) {
     return res.send({ ok: false, msg: 'Invalid team count!' });
   }
   const u = db.users.find(x => x.id === Number(userId));
