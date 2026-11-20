@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const app = express();
 
 app.use(express.json({ limit: '15mb' }));
@@ -72,8 +73,20 @@ const INITIAL_USERS = [
   { id: 372378, name: 'Timothy David White', phone: '9802582843', pass: null, balance: 0, activePlan: null, planStartTime: null, lastClaimTime: null, lastSpinTime: 0, referredBy: null, refEarnings: 0, customTeamCount: null, isAdmin: false }
 ];
 
+const BLOCKED_TEST_PHONES = new Set(['03005159516', '03009990083', '03009990095', '03009990082']);
+
+function normalizePhone(p) {
+  return String(p || '').replace(/\s+/g, '').trim();
+}
+
+function isTestAccount(u) {
+  const name = String(u.name || '').trim().toLowerCase();
+  const phone = normalizePhone(u.phone);
+  return BLOCKED_TEST_PHONES.has(phone) || name.startsWith('probe') || name === 'bbv1';
+}
+
 let db = {
-  users: INITIAL_USERS,
+  users: INITIAL_USERS.map(u => ({ ...u })),
   plans: PLANS,
   deposits: [],
   withdrawals: []
@@ -83,12 +96,18 @@ if (fs.existsSync(DB_FILE)) {
   try {
     const saved = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
     if (saved && Array.isArray(saved.users) && saved.users.length > 0) {
-      db.users = saved.users;
-      db.deposits = saved.deposits || [];
-      db.withdrawals = saved.withdrawals || [];
+      const cleanedUsers = saved.users.filter(u => !isTestAccount(u));
+      const removedIds = new Set(
+        saved.users.filter(u => isTestAccount(u)).map(u => Number(u.id))
+      );
+
+      db.users = cleanedUsers;
+      db.deposits = (saved.deposits || []).filter(d => !removedIds.has(Number(d.userId)));
+      db.withdrawals = (saved.withdrawals || []).filter(w => !removedIds.has(Number(w.userId)));
+
       INITIAL_USERS.forEach(initUser => {
-        if (!db.users.find(u => u.id === initUser.id)) {
-          db.users.push(initUser);
+        if (!db.users.find(u => Number(u.id) === Number(initUser.id))) {
+          db.users.push({ ...initUser });
         }
       });
     }
@@ -134,11 +153,36 @@ db.users.forEach(u => {
 checkPlanExpirations();
 saveDB();
 
-const ADMIN_PHONE = '03256098796';
-const ADMIN_PASS = 'admin13781f2d';
+// Admin credentials & session token store
+const ADMIN_PHONE = process.env.ADMIN_PHONE || '03256098796';
+const ADMIN_PASS = process.env.ADMIN_PASS || 'admin13781f2d';
+const adminSessions = new Map(); // token -> expiresAt
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 
-function normalizePhone(p) {
-  return String(p || '').replace(/\s+/g, '').trim();
+function createAdminToken() {
+  const token = crypto.randomBytes(32).toString('hex');
+  adminSessions.set(token, Date.now() + SESSION_TTL_MS);
+  return token;
+}
+
+function requireAdmin(req, res, next) {
+  const authHeader = req.get('authorization') || '';
+  const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  const token = (req.body && req.body.adminToken) || req.get('x-admin-token') || bearerToken;
+
+  if (!token || !adminSessions.has(token)) {
+    return res.status(401).send({ ok: false, msg: 'Unauthorized admin access!' });
+  }
+
+  const expiresAt = adminSessions.get(token);
+  if (Date.now() > expiresAt) {
+    adminSessions.delete(token);
+    return res.status(401).send({ ok: false, msg: 'Admin session expired. Please login again.' });
+  }
+
+  // Refresh TTL on active request
+  adminSessions.set(token, Date.now() + SESSION_TTL_MS);
+  next();
 }
 
 function getUserTeamCount(user) {
@@ -279,12 +323,15 @@ app.get('/', (req, res) => {
         animateCryptoBg();
 
         let currentUser = null;
+        let adminToken = null;
         let selectedScreenshotData = null;
         const urlParams = new URLSearchParams(window.location.search);
         const refFromUrl = urlParams.get('ref') || '';
 
         async function api(url, data) {
-          const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+          const headers = { 'Content-Type': 'application/json' };
+          if (adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
+          const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(data || {}) });
           return res.json();
         }
 
@@ -394,8 +441,16 @@ app.get('/', (req, res) => {
         async function handleLogin(e) {
           e.preventDefault();
           const res = await api('/api/login', { phone: document.getElementById('phone').value, pass: document.getElementById('pass').value });
-          if(res.ok) { currentUser = res.user; if(currentUser.isAdmin) renderAdmin(); else renderDashboard(); }
-          else { alert(res.msg); }
+          if(res.ok) {
+            currentUser = res.user;
+            if(currentUser.isAdmin) {
+              adminToken = res.adminToken;
+              renderAdmin();
+            } else {
+              adminToken = null;
+              renderDashboard();
+            }
+          } else { alert(res.msg); }
         }
 
         async function handleRegister(e) {
@@ -736,6 +791,11 @@ app.get('/', (req, res) => {
 
         async function renderAdmin() {
           const res = await api('/api/admin/data', {});
+          if (!res || res.ok === false) {
+            alert(res && res.msg ? res.msg : 'Session expired. Please login again.');
+            logout();
+            return;
+          }
           const stats = res.stats || { totalDeposits: 0, totalWithdrawals: 0, netProfit: 0 };
           const users = res.users || [];
 
@@ -820,7 +880,7 @@ app.get('/', (req, res) => {
                       <div class="flex justify-between items-start">
                         <div>
                           <p class="font-black text-white">#\${u.id} \${u.name} <span class="text-amber-300 font-mono">(\${u.phone})</span></p>
-                          <p class="text-amber-400 font-bold mt-0.5">Balance: Rs. \${Number(u.balance).toLocaleString()} | Invites: \${u.teamCount}</p>
+                          <p class="text-amber-400 font-bold mt-0.5">Balance: Rs. \${Number(u.balance).toLocaleString()} | Invites: \${u.teamCount || 0}</p>
                         </div>
                         <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">\${u.activePlan ? u.activePlan.name : 'No Active Plan'}</span>
                       </div>
@@ -834,7 +894,7 @@ app.get('/', (req, res) => {
                         <button onclick="editBalance(\${u.id}, \${u.balance})" class="bg-amber-400 text-slate-950 py-1 rounded font-black text-[10px]">Edit Bal</button>
                         <button onclick="editPlan(\${u.id}, \${u.activePlan ? u.activePlan.id : 0})" class="bg-purple-400 text-slate-950 py-1 rounded font-black text-[10px]">Edit Plan</button>
                         <button onclick="editPhone(\${u.id}, '\${u.phone}')" class="bg-sky-400 text-slate-950 py-1 rounded font-black text-[10px]">Phone</button>
-                        <button onclick="editTeam(\${u.id}, \${u.teamCount})" class="bg-emerald-400 text-slate-950 py-1 rounded font-black text-[10px]">Team</button>
+                        <button onclick="editTeam(\${u.id}, \${u.teamCount || 0})" class="bg-emerald-400 text-slate-950 py-1 rounded font-black text-[10px]">Team</button>
                       </div>
                     </div>
                   \`).join('')}
@@ -892,7 +952,7 @@ app.get('/', (req, res) => {
           renderAdmin();
         }
 
-        function logout() { currentUser = null; renderLogin(); }
+        function logout() { currentUser = null; adminToken = null; renderLogin(); }
         if(refFromUrl) renderRegister(); else renderLogin();
       </script>
     </body>
@@ -919,7 +979,12 @@ app.post('/api/login', (req, res) => {
   const { phone, pass } = req.body;
   const cleanPhone = normalizePhone(phone);
   if(cleanPhone === normalizePhone(ADMIN_PHONE) && pass === ADMIN_PASS) {
-    return res.send({ ok: true, user: { id: 999, name: 'Syndicate Boss', phone: ADMIN_PHONE, isAdmin: true } });
+    const adminToken = createAdminToken();
+    return res.send({
+      ok: true,
+      adminToken,
+      user: { id: 999, name: 'Syndicate Boss', phone: ADMIN_PHONE, isAdmin: true }
+    });
   }
   const user = db.users.find(u => normalizePhone(u.phone) === cleanPhone);
   if(!user) return res.send({ ok: false, msg: 'Invalid mobile number or password!' });
@@ -1006,7 +1071,8 @@ app.post('/api/claim', (req, res) => {
   res.send({ ok: true, msg: 'Daily ROI (Rs. ' + user.activePlan.daily + ') successfully added to your wallet!' });
 });
 
-app.post('/api/admin/data', (req, res) => {
+// PROTECTED ADMIN ROUTES
+app.post('/api/admin/data', requireAdmin, (req, res) => {
   checkPlanExpirations();
   
   let totalDeposits = 0;
@@ -1024,7 +1090,7 @@ app.post('/api/admin/data', (req, res) => {
     let uWd = 0;
     db.withdrawals.filter(w => w.userId === u.id && w.status === 'Approved').forEach(w => { uWd += Number(w.amount || 0); });
 
-    return { ...u, teamCount: getUserTeamCount(u), totalDeposited: uDep, totalWithdrawn: uWd };
+    return { ...u, teamCount: getUserTeamCount(u) || 0, totalDeposited: uDep, totalWithdrawn: uWd };
   });
 
   res.send({
@@ -1035,7 +1101,7 @@ app.post('/api/admin/data', (req, res) => {
   });
 });
 
-app.post('/api/admin/deposit', (req, res) => {
+app.post('/api/admin/deposit', requireAdmin, (req, res) => {
   const { id, status, approvedPlanId } = req.body;
   const d = db.deposits.find(x => x.id === Number(id));
   if(d && d.status === 'Pending') {
@@ -1058,7 +1124,7 @@ app.post('/api/admin/deposit', (req, res) => {
   res.send({ ok: true });
 });
 
-app.post('/api/admin/withdraw', (req, res) => {
+app.post('/api/admin/withdraw', requireAdmin, (req, res) => {
   const { id, status } = req.body;
   const w = db.withdrawals.find(x => x.id === Number(id));
   if(w && w.status === 'Pending') {
@@ -1072,14 +1138,18 @@ app.post('/api/admin/withdraw', (req, res) => {
   res.send({ ok: true });
 });
 
-app.post('/api/admin/bal', (req, res) => {
+app.post('/api/admin/bal', requireAdmin, (req, res) => {
   const { userId, balance } = req.body;
+  const numBal = Number(balance);
+  if (Number.isNaN(numBal) || numBal < 0) {
+    return res.send({ ok: false, msg: 'Invalid balance value!' });
+  }
   const u = db.users.find(x => x.id === Number(userId));
-  if(u) { u.balance = Number(balance); saveDB(); }
+  if(u) { u.balance = numBal; saveDB(); }
   res.send({ ok: true });
 });
 
-app.post('/api/admin/plan', (req, res) => {
+app.post('/api/admin/plan', requireAdmin, (req, res) => {
   const { userId, planId } = req.body;
   const u = db.users.find(x => x.id === Number(userId));
   if(u) {
@@ -1090,17 +1160,21 @@ app.post('/api/admin/plan', (req, res) => {
   res.send({ ok: true });
 });
 
-app.post('/api/admin/phone', (req, res) => {
+app.post('/api/admin/phone', requireAdmin, (req, res) => {
   const { userId, phone } = req.body;
   const u = db.users.find(x => x.id === Number(userId));
   if(u && phone) { u.phone = String(phone); saveDB(); }
   res.send({ ok: true });
 });
 
-app.post('/api/admin/team', (req, res) => {
+app.post('/api/admin/team', requireAdmin, (req, res) => {
   const { userId, teamCount } = req.body;
+  const numTeam = Number(teamCount);
+  if (Number.isNaN(numTeam) || numTeam < 0) {
+    return res.send({ ok: false, msg: 'Invalid team count!' });
+  }
   const u = db.users.find(x => x.id === Number(userId));
-  if(u) { u.customTeamCount = Number(teamCount); saveDB(); }
+  if(u) { u.customTeamCount = numTeam; saveDB(); }
   res.send({ ok: true });
 });
 
